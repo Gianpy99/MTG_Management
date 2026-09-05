@@ -46,6 +46,18 @@ DECK_SIZE = 100
 app = FastAPI(title="Middle-earth MTG Management", version="1.0.0")
 
 
+@app.middleware("http")
+async def _no_cache(request, call_next):
+    """Prevent the browser from serving a stale UI after a redeploy."""
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.endswith((".js", ".css", ".html")):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
 @app.on_event("startup")
 def _startup() -> None:
     Base.metadata.create_all(bind=engine)
