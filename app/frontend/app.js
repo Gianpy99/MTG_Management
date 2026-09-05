@@ -255,7 +255,10 @@ async function loadDeck() {
   tbody.innerHTML = cards
     .map(
       (d) => `<tr data-id="${d.id}">
-        <td><button class="card-link" data-name="${encodeURIComponent(d.card.card_name)}">${d.card.card_name}</button></td>
+        <td class="deck-name">
+          <img class="deck-thumb" data-name="${encodeURIComponent(d.card.card_name)}" alt="" />
+          <button class="card-link" data-name="${encodeURIComponent(d.card.card_name)}">${d.card.card_name}</button>
+        </td>
         <td>${d.role || ""}</td>
         <td>${d.card.quantity > 0 ? '<span class="pill owned">owned</span>' : '<span class="pill missing">need</span>'}</td>
         <td>${d.status}</td>
@@ -264,10 +267,40 @@ async function loadDeck() {
       </tr>`
     )
     .join("");
+  setupLazyThumbs("#deck-table");
+}
+
+// Lazy-load Scryfall thumbnails only for rows scrolled into view (avoids
+// hammering the Scryfall API with all cards at once).
+let thumbObserver = null;
+function setupLazyThumbs(rootSelector) {
+  if (thumbObserver) thumbObserver.disconnect();
+  thumbObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        loadThumb(en.target);
+        obs.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: "200px" });
+  document.querySelectorAll(`${rootSelector} img.deck-thumb`).forEach((el) => thumbObserver.observe(el));
+}
+
+async function loadThumb(img) {
+  try {
+    const c = await fetchScryfall(decodeURIComponent(img.dataset.name));
+    const u =
+      (c.image_uris && c.image_uris.small) ||
+      (c.card_faces && c.card_faces[0].image_uris && c.card_faces[0].image_uris.small);
+    if (u) img.src = u;
+    else img.classList.add("thumb-missing");
+  } catch (e) {
+    img.classList.add("thumb-missing");
+  }
 }
 
 document.querySelector("#deck-table tbody").addEventListener("click", async (e) => {
-  if (e.target.classList.contains("card-link")) {
+  if (e.target.classList.contains("card-link") || e.target.classList.contains("deck-thumb")) {
     openCardModal(decodeURIComponent(e.target.dataset.name));
     return;
   }

@@ -439,7 +439,17 @@ def validate_deck(db: Session = Depends(get_db)) -> dict:
             warnings.append(
                 f"{card.card_name}: colour identity {sorted(outside)} outside Bant (W/U/G)."
             )
-        if card.set_name not in ("The Hobbit", "The Lord of the Rings"):
+        setn = (card.set_name or "").strip().lower()
+        # Only warn when the set is KNOWN and clearly outside the Middle-earth
+        # project scope. Uncatalogued cards (set "Unknown") are not flagged.
+        in_scope = (
+            setn in ("", "unknown")
+            or "hobbit" in setn
+            or "lord of the rings" in setn
+            or "middle-earth" in setn
+            or "middle earth" in setn
+        )
+        if not in_scope:
             warnings.append(f"{card.card_name}: outside project set scope ({card.set_name}).")
         if card.quantity < s.quantity and s.status != "Need":
             warnings.append(f"{card.card_name}: marked {s.status} but only {card.quantity} owned.")

@@ -194,3 +194,17 @@ details.panel summary { cursor: pointer; color: var(--gold); }
 .modal-info { flex: 1; min-width: 220px; }
 .modal-info h2 { color: var(--gold); margin-top: 0; }
 .modal-links { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+
+/* Deck thumbnails */
+.deck-name { display: flex; align-items: center; gap: 0.6rem; }
+.deck-thumb {
+  width: 40px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.deck-thumb.thumb-missing { opacity: 0.25; }
