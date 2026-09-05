@@ -11,6 +11,7 @@ import json
 import re
 import shutil
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -413,8 +414,27 @@ def _scryfall_prints(name: str) -> list[dict]:
         {"q": f'!"{name}"', "unique": "prints", "order": "released", "dir": "asc"}
     )
     req = urllib.request.Request(url, headers=_SCRY_HEADERS)
-    with urllib.request.urlopen(req, timeout=8) as r:
-        return json.load(r).get("data", [])
+    try:
+        with urllib.request.urlopen(req, timeout=8) as r:
+            data = json.load(r).get("data", [])
+        if data:
+            return data
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            raise
+    except Exception:
+        raise
+    # Fuzzy fallback: resolve the card by fuzzy name, then fetch all its prints.
+    furl = "https://api.scryfall.com/cards/named?" + urllib.parse.urlencode({"fuzzy": name})
+    freq = urllib.request.Request(furl, headers=_SCRY_HEADERS)
+    with urllib.request.urlopen(freq, timeout=8) as r:
+        card = json.load(r)
+    purl = card.get("prints_search_uri")
+    if purl:
+        preq = urllib.request.Request(purl, headers=_SCRY_HEADERS)
+        with urllib.request.urlopen(preq, timeout=8) as r:
+            return json.load(r).get("data", [card])
+    return [card]
 
 
 def _is_hobbit(p: dict) -> bool:
