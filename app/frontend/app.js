@@ -85,9 +85,38 @@ async function refreshCollection() {
   if (set) params.set("set", set);
   if (owned) params.set("owned", owned);
   if (rarity) params.set("rarity", rarity);
-  const cards = await api.get("cards?" + params.toString());
+  colCards = await api.get("cards?" + params.toString());
+  renderCollection();
+}
+
+// Column sorting (client-side, number-aware for collector number).
+let colCards = [];
+let colSort = { key: "collector_number", dir: 1 };
+const RARITY_ORDER = { C: 0, Common: 0, U: 1, Uncommon: 1, R: 2, Rare: 2, M: 3, Mythic: 3 };
+
+function numish(v) {
+  const n = parseInt(String(v).replace(/\D/g, ""), 10);
+  return isNaN(n) ? Infinity : n;
+}
+
+function compareCards(a, b, key) {
+  if (key === "collector_number") {
+    return numish(a.collector_number) - numish(b.collector_number) ||
+      String(a.collector_number).localeCompare(String(b.collector_number));
+  }
+  if (key === "rarity") {
+    return (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99);
+  }
+  if (key === "aragorn_synergy" || key === "quantity") {
+    return (a[key] || 0) - (b[key] || 0);
+  }
+  return String(a[key] || "").localeCompare(String(b[key] || ""));
+}
+
+function renderCollection() {
+  const sorted = [...colCards].sort((a, b) => compareCards(a, b, colSort.key) * colSort.dir);
   const tbody = document.querySelector("#col-table tbody");
-  tbody.innerHTML = cards
+  tbody.innerHTML = sorted
     .map(
       (c) => `<tr data-id="${c.id}">
         <td>${c.set_name}</td><td>${c.collector_number}</td>
@@ -103,7 +132,21 @@ async function refreshCollection() {
       </tr>`
     )
     .join("");
+  document.querySelectorAll("#col-table thead th.sortable").forEach((th) => {
+    const active = th.dataset.sort === colSort.key;
+    th.setAttribute("aria-sort", active ? (colSort.dir === 1 ? "ascending" : "descending") : "none");
+    th.dataset.arrow = active ? (colSort.dir === 1 ? " ▲" : " ▼") : "";
+  });
 }
+
+document.querySelector("#col-table thead").addEventListener("click", (e) => {
+  const th = e.target.closest("th");
+  if (!th || !th.dataset.sort) return;
+  if (colSort.key === th.dataset.sort) colSort.dir *= -1;
+  else colSort = { key: th.dataset.sort, dir: 1 };
+  renderCollection();
+});
+
 
 document.querySelector("#col-table tbody").addEventListener("click", async (e) => {
   if (e.target.classList.contains("card-link")) {

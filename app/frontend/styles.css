@@ -103,6 +103,10 @@ th, td { padding: 0.5rem 0.7rem; text-align: left; border-bottom: 1px solid var(
 thead th { background: var(--panel-2); color: var(--gold); position: sticky; top: 0; }
 tbody tr:hover { background: rgba(200,168,75,0.06); }
 
+th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+th.sortable:hover { color: #e6c968; }
+th.sortable::after { content: attr(data-arrow); color: var(--gold); }
+
 .qty { display: flex; align-items: center; gap: 0.3rem; }
 .qty button { width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border); background: var(--panel-2); color: var(--ink); cursor: pointer; }
 .qty input { width: 46px; text-align: center; padding: 0.25rem; }
