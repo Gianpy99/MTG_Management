@@ -77,6 +77,16 @@ def health() -> dict[str, str]:
 
 
 # --------------------------------------------------------------------------- #
+# Scryfall proxy (server-side, cached — avoids browser CORS + rate limits)
+# --------------------------------------------------------------------------- #
+@app.get("/api/scryfall")
+def scryfall_card(name: str) -> dict:
+    from scryfall import get_card
+
+    return get_card(name)
+
+
+# --------------------------------------------------------------------------- #
 # Sets & completion
 # --------------------------------------------------------------------------- #
 @app.get("/api/sets")

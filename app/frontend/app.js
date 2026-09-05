@@ -289,10 +289,7 @@ function setupLazyThumbs(rootSelector) {
 async function loadThumb(img) {
   try {
     const c = await fetchScryfall(decodeURIComponent(img.dataset.name));
-    const u =
-      (c.image_uris && c.image_uris.small) ||
-      (c.card_faces && c.card_faces[0].image_uris && c.card_faces[0].image_uris.small);
-    if (u) img.src = u;
+    if (c.image_small) img.src = c.image_small;
     else img.classList.add("thumb-missing");
   } catch (e) {
     img.classList.add("thumb-missing");
@@ -394,27 +391,9 @@ function cardmarketUrl(name) {
 
 async function fetchScryfall(name) {
   if (scryfallCache.has(name)) return scryfallCache.get(name);
-  // Prefer a Middle-earth printing (ltr/ltc/hob/hoc) so image + links match the
-  // theme (many cards, e.g. Birds of Paradise, have unrelated newer reprints).
-  const meQuery = `!"${name}" (set:ltr or set:ltc or set:hob or set:hoc)`;
-  try {
-    const meUrl =
-      "https://api.scryfall.com/cards/search?" +
-      new URLSearchParams({ q: meQuery, unique: "prints", order: "released", dir: "desc" }).toString();
-    const r = await fetch(meUrl);
-    if (r.ok) {
-      const d = await r.json();
-      if (d.data && d.data.length) {
-        scryfallCache.set(name, d.data[0]);
-        return d.data[0];
-      }
-    }
-  } catch (e) {
-    /* fall through to fuzzy */
-  }
-  const res = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(name));
-  if (!res.ok) throw new Error("Scryfall: carta non trovata");
-  const data = await res.json();
+  // Go through our backend proxy (same origin → no CORS; server caches results
+  // and prefers the Middle-earth printing).
+  const data = await api.get("scryfall?name=" + encodeURIComponent(name));
   scryfallCache.set(name, data);
   return data;
 }
@@ -438,16 +417,13 @@ async function openCardModal(name) {
 
   try {
     const c = await fetchScryfall(name);
-    const imgUri =
-      (c.image_uris && c.image_uris.normal) ||
-      (c.card_faces && c.card_faces[0].image_uris && c.card_faces[0].image_uris.normal);
-    if (imgUri) img.src = imgUri;
+    if (c.image) img.src = c.image;
     nameEl.textContent = c.name || name;
     const flavour = c.flavor_name ? `🗺️ Middle-earth: “${c.flavor_name}”  •  ` : "";
     typeEl.textContent = flavour + [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
-    oracleEl.textContent = c.oracle_text || (c.card_faces ? c.card_faces.map((f) => f.oracle_text).join("\n//\n") : "");
+    oracleEl.textContent = c.oracle_text || "";
     if (c.scryfall_uri) scry.href = c.scryfall_uri;
-    if (c.purchase_uris && c.purchase_uris.cardmarket) cm.href = c.purchase_uris.cardmarket;
+    if (c.cardmarket) cm.href = c.cardmarket;
   } catch (err) {
     oracleEl.textContent = "Non trovata su Scryfall. Usa i link qui sotto per cercarla.";
   }
