@@ -500,6 +500,12 @@ def enrich_cards(only_unknown: bool = True, limit: int = 400, db: Session = Depe
         query = query.filter(Card.set_name == "Unknown")
     cards = query.limit(limit).all()
 
+    # Basic lands are always in scope; normalise their set without hitting
+    # Scryfall (they have too many printings to resolve a Middle-earth one).
+    for b in db.query(Card).filter(func.lower(Card.card_name).in_(BASIC_LANDS)).all():
+        if b.set_name not in PROJECT_SETS:
+            b.set_name = "The Lord of the Rings"
+
     updated = 0
     to_hobbit = 0
     to_lotr = 0
@@ -569,7 +575,10 @@ def cleanup_non_scope(db: Session = Depends(get_db)) -> dict:
     Removing a card also removes its deck slots and wishlist entries (cascade),
     keeping the collection and the Aragorn deck within the Tolkien project scope.
     """
-    doomed = db.query(Card).filter(Card.set_name.notin_(PROJECT_SETS)).all()
+    doomed = db.query(Card).filter(
+        Card.set_name.notin_(PROJECT_SETS),
+        func.lower(Card.card_name).notin_(BASIC_LANDS),
+    ).all()
     removed = [{"name": c.card_name, "set": c.set_name} for c in doomed]
     for c in doomed:
         db.delete(c)
@@ -621,9 +630,11 @@ def validate_deck(db: Session = Depends(get_db)) -> dict:
             )
         setn = (card.set_name or "").strip().lower()
         # Only warn when the set is KNOWN and clearly outside the Middle-earth
-        # project scope. Uncatalogued cards (set "Unknown") are not flagged.
+        # project scope. Uncatalogued (Unknown) cards and basic lands are exempt.
+        name_l = (card.card_name or "").strip().lower()
         in_scope = (
             setn in ("", "unknown")
+            or name_l in BASIC_LANDS
             or "hobbit" in setn
             or "lord of the rings" in setn
             or "middle-earth" in setn
