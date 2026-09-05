@@ -293,6 +293,11 @@ def delete_deck_card(slot_id: int, db: Session = Depends(get_db)) -> dict:
 
 _DECK_LINE = re.compile(r"^\s*(?:(\d+)\s*[xX]?\s+)?(.+?)\s*$")
 _SKIP_PREFIXES = ("//", "#", "deck", "commander:", "sideboard", "sb:", "maybeboard", "about")
+BASIC_LANDS = {
+    "plains", "island", "swamp", "mountain", "forest", "wastes",
+    "snow-covered plains", "snow-covered island", "snow-covered swamp",
+    "snow-covered mountain", "snow-covered forest",
+}
 
 
 def _parse_decklist(text: str) -> list[tuple[int, str]]:
@@ -307,12 +312,11 @@ def _parse_decklist(text: str) -> list[tuple[int, str]]:
         if not line:
             continue
         low = line.lower()
-        if low.startswith(_SKIP_PREFIXES) and not _DECK_LINE.match(line).group(1):
-            # A pure header like "Commander:" / "Deck" with no card after it.
-            if low in ("deck", "sideboard", "maybeboard") or low.endswith(":"):
-                continue
         m = _DECK_LINE.match(line)
         if not m:
+            continue
+        # Skip pure section headers ("Deck", "Commander:", "Sideboard").
+        if m.group(1) is None and (low in ("deck", "sideboard", "maybeboard") or low.endswith(":")):
             continue
         qty = int(m.group(1)) if m.group(1) else 1
         name = m.group(2).strip()
@@ -333,50 +337,62 @@ def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
         db.query(DeckCard).delete()
         db.flush()
 
+    # Preload the catalogue indexed by a Python-normalised name. SQLite's lower()
+    # is ASCII-only, so accented Middle-earth names (Éomer, Andúril, ...) must be
+    # matched in Python to avoid missed lookups and duplicate inserts.
+    existing_by_name: dict[str, Card] = {}
+    for c in db.query(Card).all():
+        existing_by_name.setdefault(c.card_name.strip().lower(), c)
+
+    # Aggregate requested quantities per unique card (keeps basic-land copies).
+    order: list[str] = []
+    agg: dict[str, list] = {}  # norm -> [display_name, qty]
+    for qty, name in parsed:
+        norm = name.strip().lower()
+        if norm not in agg:
+            agg[norm] = [name, 0]
+            order.append(norm)
+        agg[norm][1] += qty
+
     matched = 0
     created = 0
-    skipped_dupes: list[str] = []
-    added_slots = 0
-    seen_card_ids: set[int] = set()
-
-    for _, name in parsed:
-        card = (
-            db.query(Card)
-            .filter(func.lower(Card.card_name) == name.lower())
-            .order_by(Card.quantity.desc())
-            .first()
-        )
+    slots = 0
+    for norm in order:
+        display, qty = agg[norm]
+        card = existing_by_name.get(norm)
         if card is None:
-            # Card outside the current catalogue: create a placeholder to buy.
-            card = Card(set_name="Unknown", card_name=name, collector_number="", quantity=0)
+            card = Card(
+                set_name="Unknown",
+                card_name=display,
+                collector_number="",
+                card_type="Basic Land" if norm in BASIC_LANDS else "",
+                quantity=0,
+            )
             db.add(card)
             db.flush()
+            existing_by_name[norm] = card
             created += 1
         else:
             matched += 1
 
-        if card.id in seen_card_ids:
-            skipped_dupes.append(name)
-            continue
-        seen_card_ids.add(card.id)
-
-        is_cmd = name.lower() == COMMANDER_NAME.lower()
-        slot = DeckCard(
-            card_id=card.id,
-            quantity=1,
-            is_commander=is_cmd,
-            role="Commander" if is_cmd else "",
-            status="Owned" if card.quantity >= 1 else "Need",
+        is_cmd = norm == COMMANDER_NAME.lower()
+        db.add(
+            DeckCard(
+                card_id=card.id,
+                quantity=qty,
+                is_commander=is_cmd,
+                role="Commander" if is_cmd else "",
+                status="Owned" if card.quantity >= qty else "Need",
+            )
         )
-        db.add(slot)
-        added_slots += 1
+        slots += 1
 
     db.commit()
     return {
-        "slots": added_slots,
+        "unique_cards": slots,
+        "total_cards": sum(v[1] for v in agg.values()),
         "matched_in_collection": matched,
         "created_as_need": created,
-        "skipped_duplicates": skipped_dupes,
         "replaced": payload.replace,
     }
 
@@ -408,7 +424,10 @@ def validate_deck(db: Session = Depends(get_db)) -> dict:
         seen[s.card_id] = seen.get(s.card_id, 0) + s.quantity
     for card_id, qty in seen.items():
         card = db.get(Card, card_id)
-        is_basic = card and "basic" in (card.card_type or "").lower()
+        name_l = (card.card_name or "").strip().lower() if card else ""
+        is_basic = card and (
+            "basic" in (card.card_type or "").lower() or name_l in BASIC_LANDS
+        )
         if qty > 1 and not is_basic:
             errors.append(f"Singleton violation: {card.card_name if card else card_id} x{qty}.")
 
