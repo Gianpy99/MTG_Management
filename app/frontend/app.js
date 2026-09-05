@@ -394,8 +394,25 @@ function cardmarketUrl(name) {
 
 async function fetchScryfall(name) {
   if (scryfallCache.has(name)) return scryfallCache.get(name);
-  const url = "https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(name);
-  const res = await fetch(url);
+  // Prefer a Middle-earth printing (ltr/ltc/hob/hoc) so image + links match the
+  // theme (many cards, e.g. Birds of Paradise, have unrelated newer reprints).
+  const meQuery = `!"${name}" (set:ltr or set:ltc or set:hob or set:hoc)`;
+  try {
+    const meUrl =
+      "https://api.scryfall.com/cards/search?" +
+      new URLSearchParams({ q: meQuery, unique: "prints", order: "released", dir: "desc" }).toString();
+    const r = await fetch(meUrl);
+    if (r.ok) {
+      const d = await r.json();
+      if (d.data && d.data.length) {
+        scryfallCache.set(name, d.data[0]);
+        return d.data[0];
+      }
+    }
+  } catch (e) {
+    /* fall through to fuzzy */
+  }
+  const res = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(name));
   if (!res.ok) throw new Error("Scryfall: carta non trovata");
   const data = await res.json();
   scryfallCache.set(name, data);
