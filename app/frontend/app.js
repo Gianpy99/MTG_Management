@@ -361,6 +361,20 @@ document.getElementById("enrich-btn").addEventListener("click", async () => {
   }
 });
 
+// ---------- Cleanup: remove out-of-scope cards ----------
+document.getElementById("cleanup-btn").addEventListener("click", async () => {
+  const out = document.getElementById("cleanup-result");
+  if (!confirm("Rimuovere dalla collezione (e dal deck) tutte le carte che non sono Hobbit o LOTR?")) return;
+  out.textContent = "Rimozione…";
+  try {
+    const data = await api.send("POST", "cards/cleanup", null);
+    out.textContent = `Rimosse ${data.deleted} carte:\n` + data.cards.map((c) => `- ${c.name} (${c.set})`).join("\n");
+    setsCache = [];
+  } catch (err) {
+    out.textContent = "Errore: " + err.message;
+  }
+});
+
 // ---------- helpers ----------
 function opts(list, sel) {
   return list.map((o) => `<option ${o === sel ? "selected" : ""}>${o}</option>`).join("");

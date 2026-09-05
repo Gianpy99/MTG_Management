@@ -559,6 +559,24 @@ def enrich_cards(only_unknown: bool = True, limit: int = 400, db: Session = Depe
     }
 
 
+PROJECT_SETS = ("The Hobbit", "The Lord of the Rings")
+
+
+@app.post("/api/cards/cleanup")
+def cleanup_non_scope(db: Session = Depends(get_db)) -> dict:
+    """Delete every card whose set is not one of the two project sets.
+
+    Removing a card also removes its deck slots and wishlist entries (cascade),
+    keeping the collection and the Aragorn deck within the Tolkien project scope.
+    """
+    doomed = db.query(Card).filter(Card.set_name.notin_(PROJECT_SETS)).all()
+    removed = [{"name": c.card_name, "set": c.set_name} for c in doomed]
+    for c in doomed:
+        db.delete(c)
+    db.commit()
+    return {"deleted": len(removed), "cards": removed}
+
+
 def _colour_identity(card: Card) -> set[str]:
     letters = set(re.findall(r"[WUBRG]", (card.mana_cost or "").upper()))
     return letters
