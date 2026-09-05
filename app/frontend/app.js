@@ -344,6 +344,23 @@ document.getElementById("import-btn").addEventListener("click", async () => {
   }
 });
 
+// ---------- Scryfall enrichment (fix Unknown sets) ----------
+document.getElementById("enrich-btn").addEventListener("click", async () => {
+  const btn = document.getElementById("enrich-btn");
+  const out = document.getElementById("enrich-result");
+  btn.disabled = true;
+  out.textContent = "Recupero dati da Scryfall… (può richiedere un minuto)";
+  try {
+    const data = await api.send("POST", "cards/enrich", null);
+    out.textContent = JSON.stringify(data, null, 2);
+    setsCache = [];
+  } catch (err) {
+    out.textContent = "Errore: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // ---------- helpers ----------
 function opts(list, sel) {
   return list.map((o) => `<option ${o === sel ? "selected" : ""}>${o}</option>`).join("");

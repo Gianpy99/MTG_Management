@@ -7,8 +7,12 @@ Commander deck builder.
 from __future__ import annotations
 
 import io
+import json
 import re
 import shutil
+import time
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, UploadFile
@@ -394,6 +398,144 @@ def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
         "matched_in_collection": matched,
         "created_as_need": created,
         "replaced": payload.replace,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Scryfall enrichment (fix "Unknown" set on imported cards)
+# --------------------------------------------------------------------------- #
+_MIDDLE_EARTH_CODES = {"ltr", "ltc", "rex", "pltr", "pltc", "altr"}
+_SCRY_HEADERS = {"User-Agent": "MTGManagement/1.0 (personal Raspberry Pi app)", "Accept": "application/json"}
+
+
+def _scryfall_prints(name: str) -> list[dict]:
+    url = "https://api.scryfall.com/cards/search?" + urllib.parse.urlencode(
+        {"q": f'!"{name}"', "unique": "prints", "order": "released", "dir": "asc"}
+    )
+    req = urllib.request.Request(url, headers=_SCRY_HEADERS)
+    with urllib.request.urlopen(req, timeout=8) as r:
+        return json.load(r).get("data", [])
+
+
+def _is_hobbit(p: dict) -> bool:
+    return "hobbit" in (p.get("set_name") or "").lower()
+
+
+def _is_middle_earth(p: dict) -> bool:
+    sn = (p.get("set_name") or "").lower()
+    sc = (p.get("set") or "").lower()
+    return (
+        "lord of the rings" in sn
+        or "middle-earth" in sn
+        or "middle earth" in sn
+        or sc in _MIDDLE_EARTH_CODES
+    )
+
+
+def _classify_printing(prints: list[dict]) -> tuple[str | None, dict | None]:
+    """Classify a card into the two project sets.
+
+    Prints are ordered oldest-first, so prints[0] is the ORIGINAL printing —
+    that decides the canonical set. If the original is not a Middle-earth set
+    (e.g. a generic staple), fall back to any Middle-earth printing the card has.
+    """
+    if not prints:
+        return None, None
+    first = prints[0]
+    if _is_hobbit(first):
+        return "The Hobbit", first
+    if _is_middle_earth(first):
+        return "The Lord of the Rings", first
+    # Original isn't Middle-earth: prefer a LOTR printing, then a Hobbit one.
+    lotr = next((p for p in prints if _is_middle_earth(p)), None)
+    if lotr is not None:
+        return "The Lord of the Rings", lotr
+    hobbit = next((p for p in prints if _is_hobbit(p)), None)
+    if hobbit is not None:
+        return "The Hobbit", hobbit
+    return first.get("set_name") or "Unknown", first
+
+
+_RARITY_MAP = {"common": "C", "uncommon": "U", "rare": "R", "mythic": "M", "special": "S", "bonus": "B"}
+
+
+def _colour_label(colors: list[str] | None) -> str:
+    colors = colors or []
+    if len(colors) == 0:
+        return "C"
+    if len(colors) == 1:
+        return colors[0]
+    return "Multicolour"
+
+
+@app.post("/api/cards/enrich")
+def enrich_cards(only_unknown: bool = True, limit: int = 400, db: Session = Depends(get_db)) -> dict:
+    """Fill real set/metadata from Scryfall for cards (default: only 'Unknown').
+
+    Maps Middle-earth printings to the two project sets so imported deck cards
+    stop showing as 'Unknown'. Throttled to respect Scryfall's rate limits.
+    """
+    query = db.query(Card)
+    if only_unknown:
+        query = query.filter(Card.set_name == "Unknown")
+    cards = query.limit(limit).all()
+
+    updated = 0
+    to_hobbit = 0
+    to_lotr = 0
+    other_set = 0
+    unmatched: list[str] = []
+
+    for card in cards:
+        try:
+            prints = _scryfall_prints(card.card_name)
+        except Exception:
+            unmatched.append(card.card_name)
+            time.sleep(0.12)
+            continue
+        label, p = _classify_printing(prints)
+        if not label or p is None:
+            unmatched.append(card.card_name)
+            time.sleep(0.12)
+            continue
+
+        card.set_name = label
+        if label == "The Hobbit":
+            to_hobbit += 1
+        elif label == "The Lord of the Rings":
+            to_lotr += 1
+        else:
+            other_set += 1
+
+        # Fill metadata only where empty (never overwrite curated workbook data).
+        if not card.collector_number:
+            card.collector_number = str(p.get("collector_number") or "")
+        if not card.rarity:
+            card.rarity = _RARITY_MAP.get((p.get("rarity") or "").lower(), "")
+        if not card.colour:
+            card.colour = _colour_label(p.get("color_identity") or p.get("colors"))
+        if not card.mana_cost:
+            face = (p.get("card_faces") or [{}])[0]
+            card.mana_cost = p.get("mana_cost") or face.get("mana_cost") or ""
+        if not card.card_type:
+            card.card_type = p.get("type_line") or ""
+        if not card.oracle_text:
+            face = (p.get("card_faces") or [{}])[0]
+            card.oracle_text = p.get("oracle_text") or face.get("oracle_text") or ""
+        if not card.legendary:
+            card.legendary = "legendary" in (p.get("type_line") or "").lower()
+
+        updated += 1
+        time.sleep(0.12)  # be polite to Scryfall
+
+    db.commit()
+    return {
+        "checked": len(cards),
+        "updated": updated,
+        "to_hobbit": to_hobbit,
+        "to_lord_of_the_rings": to_lotr,
+        "other_real_set": other_set,
+        "unmatched": unmatched,
     }
 
 
