@@ -179,3 +179,8 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# MTG Management — runtime SQLite data (do not commit)
+app/backend/data/
+/data/
+*.db

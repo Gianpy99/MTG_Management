@@ -1,0 +1,26 @@
+# =============================================================================
+# docker-compose.yml - Middle-earth MTG Management sul Raspberry Pi
+# -----------------------------------------------------------------------------
+# Copia questa cartella in ~/apps/mtg-collection/ sul Pi, poi:
+#   docker compose up -d
+# La UI e l'API girano su http://192.168.1.129:8094/ (dietro Caddy: /mtg/).
+# =============================================================================
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mtg-collection:latest
+    container_name: mtg-collection
+    restart: unless-stopped
+    ports:
+      - "8094:8094"
+    environment:
+      MTG_DATA_DIR: /app/data
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8094/health', timeout=8).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

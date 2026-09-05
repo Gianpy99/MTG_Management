@@ -1,0 +1,443 @@
+Set,Card Name,Collector Number,Rarity,Colour,Mana Cost,Card Type,Subtype,Power,Toughness,Oracle Text / Ability,Legendary?,Creature Type,Ring Tempts You?,Food?,Treasure?,Ring / The One Ring Synergy?,Aragorn Synergy (1-5),Gandalf Synergy (1-5),Fellowship / Legends Synergy (1-5),Commander Role,Owned?,Notes
+The Hobbit,Attercop,116,C,G,{1}{G},Creature,Spider,2,1,"Reach, deathtouch
+Landfall — Whenever a land you control enters, this creature gets +1/+1 until end of turn.",No,Spider,No,No,No,No,,,,,Yes,Name corrected from 'Atercop'.
+The Hobbit,Bard the Bowman,145,U,Multicolour,{1}{W}{U},Creature,Human Archer,1,3,"Reach
+Whenever you draw your second card each turn, put a +1/+1 counter on target creature. It gains lifelink until end of turn.",Yes,Human Archer,No,No,No,No,,,,,Yes,
+The Hobbit,Bard's Company,146,R,Multicolour,{2}{W}{U},Creature,Human Citizen,2,3,"You may cast this spell as though it had flash if you control a Human.
+Other creatures you control get +1/+1.
+Whenever this creature enters or attacks, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,Human Citizen,No,No,No,No,,,,,Yes,
+The Hobbit,Bejeweled Warg,117,R,G,{1}{G},Creature,Wolf,3,2,"Trample
+Whenever this creature deals combat damage to a player, choose one —
+• Put a +1/+1 counter on target Wolf you control.
+• Create a Treasure token. (It's an artifact with ""{T}, Sacrifice this token: Add one mana of any color."")",No,Wolf,No,No,Yes,No,,,,,Yes,Name corrected from 'Bejeweled Wargs'.
+The Hobbit,Beorn's Hospitality,120,U,G,{1}{G},Enchantment,,,,"Landfall — Whenever a land you control enters, put a +1/+1 counter on target creature you control.
+{5}{G}{G}: This enchantment becomes a Bear creature in addition to its other types and gains ""This creature's power and toughness are each equal to the number of lands you control."" (This effect doesn't end.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Beorn, Reluctant Host // Till and Tend",118,C,G,{4}{G} // {1}{G},Creature // Sorcery,Human Bear Shapeshifter // Adventure,5,5,"Beorn, Reluctant Host:
+Trample
+//
+Till and Tend:
+You may play an additional land this turn. (Then exile this card. You may cast the creature later from exile.)",Yes,Human Bear Shapeshifter,No,No,No,No,,,,,Yes,
+The Hobbit,"Bifur, Melodic Rider",147,U,Multicolour,{4}{R/W}{R/W},Creature,Dwarf Bard,4,5,"Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+Whenever Bifur enters or attacks, put a +1/+1 counter on target creature.
+As long as you have an enduring story, if a triggered ability of a Dwarf you control triggers, that ability triggers an additional time.",Yes,Dwarf Bard,No,No,No,No,,,,,Yes,
+The Hobbit,"Bilbo Baggins, Burglar // Take a Glance",34,C,U,{2}{U} // {U},Creature // Sorcery,Halfling Rogue // Adventure,2,1,"Bilbo Baggins, Burglar:
+When Bilbo Baggins enters, draw a card.
+//
+Take a Glance:
+Scry 2. (Then exile this card. You may cast the creature later from exile.)",Yes,Halfling Rogue,No,No,No,No,,,,,Yes,
+The Hobbit,Bilbo's Deadly Slice,62,C,B,{1}{B}{B},Instant,,,,Destroy target creature.,No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Bilbo, Luckwearer // Burglar's Plot",32,U,U,{1}{U} // {4}{U},Creature // Sorcery,Halfling Rogue // Adventure,1,1,"Bilbo, Luckwearer:
+Bilbo can't be blocked.
+Whenever Bilbo deals combat damage to a player, draw a card, then discard a card.
+//
+Burglar's Plot:
+Exchange control of two target nonland permanents that share a card type. (Then exile this card. You may cast the creature later from exile.)",Yes,Halfling Rogue,No,No,No,No,,,,,Yes,
+The Hobbit,"Bofur, Reliable Guardian // Concerted Care",6,U,W,{W} // {1}{W},Creature // Instant,Dwarf Scout // Adventure,1,1,"Bofur, Reliable Guardian:
+Lifelink
+//
+Concerted Care:
+Target artifact or creature you control gains hexproof and indestructible until end of turn. (Then exile this card. You may cast the creature later from exile.)",Yes,Dwarf Scout,No,No,No,No,,,,,Yes,
+The Hobbit,Bolg of the North,148,U,Multicolour,{3}{B}{R},Creature,Goblin Soldier,5,5,"When Bolg enters, you may sacrifice another creature. When you do, Bolg deals damage equal to that creature's power to another target creature. If excess damage was dealt this way, amass Goblins X, where X is that excess damage. (Put X +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",Yes,Goblin Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Bolg's Company,149,R,Multicolour,{B}{R},Creature,Goblin Soldier,2,2,"This creature has haste as long as you control another Goblin.
+{T}, Sacrifice another Goblin: Add {B}{R}.",No,Goblin Soldier,No,No,No,No,,,,,,Not located in collection photos - please verify presence.
+The Hobbit,"Bombur, Gentle Dreamer",88,U,R,{2}{R},Creature,Dwarf Bard,5,3,"Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+Bombur doesn't untap during your untap step unless you have an enduring story.",Yes,Dwarf Bard,No,No,No,No,,,,,Yes,
+The Hobbit,Bothersome Noisemaker,89,U,R,{1}{R},Creature,Goblin Bard,2,2,"Whenever you cast a noncreature spell, amass Goblins 1. (Put a +1/+1 counter on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,Goblin Bard,No,No,No,No,,,,,Yes,
+The Hobbit,Boughside Wanderers,121,C,G,{4}{G}{G},Creature,Elf Scout,4,4,"When this creature enters, look at the top four cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.
+Landfall — Whenever a land you control enters, this creature gets +2/+2 until end of turn.",No,Elf Scout,No,No,No,No,,,,,Yes,
+The Hobbit,"Burn, Burn, Tree and Fern",90,U,R,{3}{R},Enchantment,Saga,,,"(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)
+I — This Saga deals 6 damage to target creature an opponent controls.
+II — Destroy target artifact an opponent controls.
+III, IV — Add {R}.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Cantankerous Keepers,122,R,G,{5}{G},Creature,Elf Soldier,4,3,"Affinity for Elves (This spell costs {1} less to cast for each Elf you control.)
+When this creature enters, mill four cards, then put all Elf cards from among them into your hand.",No,Elf Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Celebrate the Mountain-king,7,U,W,{3}{W},Enchantment,,,,"When this enchantment enters, for each opponent, exile up to one target nonland permanent that player controls until this enchantment leaves the battlefield.
+When this enchantment enters, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Confusticate and Bebother,35,C,U,{2}{U},Instant,,,,"Choose one —
+• Counter target spell unless its controller pays {4}.
+• Draw two cards, then discard a card.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Crude Bent Blade,63,C,B,{2}{B},Artifact,Equipment,,,"When this Equipment enters, target opponent sacrifices a creature of their choice.
+Equipped creature gets +2/+1.
+Equip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Desolation Prowler,64,U,B,{1}{B},Creature,Wolf,2,2,Pay 2 life: This creature gets +2/+2 until end of turn. Activate only once each turn.,No,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,"Dori, Bearer of Friends",94,C,R,{2}{R},Creature,Dwarf Warrior,3,2,"Trample
+When Dori enters, create a Treasure token. (It's an artifact with ""{T}, Sacrifice this token: Add one mana of any color."")",Yes,Dwarf Warrior,No,No,Yes,No,,,,,Yes,
+The Hobbit,"Down, Down to Goblin-town",65,U,B,{2}{B},Enchantment,Saga,,,"(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)
+I — Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.
+II — Amass Goblins 1. (Put a +1/+1 counter on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)
+III, IV — Target opponent loses 1 life and you gain 1 life.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Dreaded Bat-Cloud,66,U,B,{4}{B},Creature,Bat,4,2,"This spell costs {3} less to cast if a creature died this turn.
+Flying, deathtouch",No,Bat,No,No,No,No,,,,,Yes,
+The Hobbit,Duskwatch Hunter,153,C,Multicolour,{2}{B/G},Creature,Wolf,3,1,"This creature can't be blocked by tokens.
+When this creature enters, put a +1/+1 counter on target creature.",No,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,Dwarven Mattock,172,U,Colourless,{2},Artifact,Equipment,,,"When this Equipment enters, attach it to target Dwarf you control.
+Equipped creature gets +2/+2 and has ward {1}. (Whenever equipped creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)
+Equip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Dwarven Mauler,95,U,R,{R},Creature,Dwarf Warrior,2,1,Equip abilities you activate that target this creature cost {2} less to activate.,No,Dwarf Warrior,No,No,No,No,,,,,Yes,
+The Hobbit,Dwarven Provisioner,9,C,W,{1}{W},Creature,Dwarf Citizen,2,2,{3}{W}: Creatures you control get +1/+1 until end of turn.,No,Dwarf Citizen,No,No,No,No,,,,,Yes,
+The Hobbit,Dwarven Shortsword,10,C,W,{3}{W},Artifact,Equipment,,,"When this Equipment enters, create a 2/2 red Dwarf creature token, then attach this Equipment to it.
+Equipped creature gets +1/+2.
+Equip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Dáin, Lord of the Iron Hills",8,U,W,{1}{W},Creature,Dwarf Noble,2,2,"Vigilance
+Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+As long as you have an enduring story, creatures can't attack you unless their controller pays {1} for each of those creatures.",Yes,Dwarf Noble,No,No,No,No,,,,,Yes,
+The Hobbit,Eagle of the Great Shelf,11,U,W,{4}{W},Creature,Bird Soldier,2,5,"Flying
+Whenever this creature attacks, it gets +1/+1 until end of turn for each other creature you control.",No,Bird Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Eagle's Rescue,155,U,Multicolour,{2}{W/U}{W/U},Enchantment,Aura,,,"Enchant creature
+Enchanted creature gets +2/+2 and has flying.
+{2}{W/U}{W/U}: Return this card from your graveyard to the battlefield attached to target creature you control with power 1 or less. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Elven Passage,181,R,Land,,Land,,,,"{T}, Pay 1 life, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. You may behold an Elf. If you do, untap that land. (To behold an Elf, choose an Elf you control or reveal an Elf card from your hand.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Elven Raft-Steerer,37,U,U,{2}{U},Creature,Elf Pilot,3,2,"Landfall — Whenever a land you control enters, choose one —
+• Tap target creature an opponent controls.
+• Untap target creature you control.",No,Elf Pilot,No,No,No,No,,,,,Yes,
+The Hobbit,Elvenking's Halls,182,C,Land,,Land,,,,"This land enters tapped.
+{T}: Add {G} or {U}.
+{2}{G}{U}, {T}, Sacrifice this land: Put two +1/+1 counters on target Elf you control. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Enchanted River's Grasp,39,C,U,{2}{U},Enchantment,Aura,,,"Enchant creature
+When this Aura enters, tap enchanted creature and remove all counters from it.
+Enchanted creature loses all abilities and doesn't untap during its controller's untap step.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Esgaroth Garrison,13,C,W,{4}{W},Creature,Human Soldier,*,5,"Esgaroth Garrison's power is equal to the number of creatures you control.
+When this creature enters, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,Human Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Everything's Hungry,,,,,,,,,,,,,,,,,,,,,Card not found in database - please verify name/spelling from photo. Not located in collection photos - please verify presence.
+The Hobbit,Fearsome Goblin Pair,156,U,Multicolour,{2}{B/R},Creature,Goblin Soldier,1,1,"When this creature dies, amass Goblins 4. (Put four +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,Goblin Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Front Porch Sentries,67,C,B,{1}{B},Creature,Goblin Soldier,2,2,"When this creature dies, target creature an opponent controls gets -1/-1 until end of turn.",No,Goblin Soldier,No,No,No,No,,,,,Yes,Name corrected from 'Front Porch Sentinels'.
+The Hobbit,"Galion, Elvenking's Butler",125,U,G,{2}{G}{G},Creature,Elf Advisor,4,4,"Whenever Galion attacks, choose up to one other target creature you control. Its base power and toughness become equal to Galion's power and toughness until end of turn.",Yes,Elf Advisor,No,No,No,No,,,,,Yes,
+The Hobbit,"Gandalf, Goblins' Bane // Flameshape",96,M,R,{2}{R} // {1}{R},Creature // Sorcery,Avatar Wizard // Adventure,2,3,"Gandalf, Goblins' Bane:
+Whenever you cast a noncreature spell, Gandalf gets +1/+1 until end of turn and deals 1 damage to each opponent.
+//
+Flameshape:
+Look at the top two cards of your library and exile them face down. For as long as they remain exiled, you may play them if you control a Wizard.",Yes,Avatar Wizard,No,No,No,No,,,,,Yes,
+The Hobbit,"Gandalf, Spark Starter",97,U,R,{4}{R}{R},Creature,Avatar Wizard,4,3,"Reach
+When Gandalf enters, he deals 3 damage divided as you choose among one, two, or three targets.",Yes,Avatar Wizard,No,No,No,No,,,,,Yes,
+The Hobbit,"Gandalf, Wandering Wizard",41,C,U,{4}{U},Creature,Avatar Wizard,4,5,"Ward {3} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {3}.)
+{6}: Gandalf's owner shuffles him into their library and draws three cards.",Yes,Avatar Wizard,No,No,No,No,,,,,Yes,
+The Hobbit,Gathering of Darkness,68,U,B,{3}{B},Sorcery,,,,"Return up to one target creature card from your graveyard to your hand.
+Amass Goblins 3. (Put three +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Giant's Boulder,173,C,Colourless,{1},Artifact,,,,"When this artifact enters, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)
+{1}, {T}: Add one mana of any color.
+{7}, {T}, Sacrifice this artifact: Destroy target permanent.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Glóin the Mighty // Easy Pickings,99,U,R,{3}{R} // {2}{R},Creature // Sorcery,Dwarf Warrior // Adventure,4,3,"Glóin the Mighty:
+At the beginning of your first main phase, add {R}{R}.
+//
+Easy Pickings:
+Easy Pickings deals 1 damage to each creature your opponents control. (Then exile this card. You may cast the creature later from exile.)",Yes,Dwarf Warrior,No,No,No,No,,,,,Yes,
+The Hobbit,Gnashing of Teeth,69,U,B,{1}{B}{B},Sorcery,,,,"Choose one —
+• Target creature gets -5/-5 until end of turn. If that creature would die this turn, exile it instead.
+• Creatures target player controls get -1/-1 until end of turn.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Goblin Plate Mail,157,C,Multicolour,{1}{B/R},Artifact,Equipment,,,"When this Equipment enters, amass Goblins 1, then attach this Equipment to the amassed Army. (To amass Goblins 1, put a +1/+1 counter on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)
+Equipped creature gets +1/+0 and has menace.
+Equip {4}",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Goblin-town,183,C,Land,,Land,,,,"This land enters tapped.
+{T}: Add {B} or {R}.
+{2}{B}{R}, {T}, Sacrifice this land: Put two +1/+1 counters on target Goblin or Orc you control. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Goblin-town Flunkies,100,C,R,{1}{R},Creature,Goblin Soldier,1,1,"Haste
+When this creature enters, amass Goblins 1. (Put a +1/+1 counter on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,Goblin Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Gollum the Abandoned,72,U,B,{1}{B},Creature,Halfling Horror,2,2,"Gollum can't block.
+When Gollum enters, exile up to one target card from an opponent's graveyard. Each opponent loses 2 life.
+{2}, Sacrifice an artifact or creature: Return this card from your graveyard to your hand. Activate only as a sorcery.",Yes,Halfling Horror,No,No,No,No,,,,,Yes,
+The Hobbit,"Gollum, Silent Slinker // Meager Meal",71,C,B,{3}{B} // {B},Creature // Sorcery,Halfling Horror // Adventure,4,3,"Gollum, Silent Slinker:
+Menace (This creature can't be blocked except by two or more creatures.)
+//
+Meager Meal:
+Put a +1/+1 counter on up to one target creature. Target player gains 2 life. (Then exile this card. You may cast the creature later from exile.)",Yes,Halfling Horror,No,No,No,No,,,,,Yes,
+The Hobbit,Great Fierce Bee,73,C,B,{2}{B},Creature,Insect,2,2,"Flying
+Whenever one or more other creatures die, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",No,Insect,No,No,No,No,,,,,Yes,
+The Hobbit,Great Ugly-Looking Goblin // Clap! Snap!,74,U,B,{5}{B} // {1}{B},Creature // Sorcery,Goblin Soldier // Adventure,4,4,"Great Ugly-Looking Goblin:
+Each creature you control with a +1/+1 counter on it has menace. (It can't be blocked except by two or more creatures.)
+//
+Clap! Snap!:
+Amass Goblins 2. (Then exile this card. You may cast the creature later from exile.)",No,Goblin Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Guardian of the Halls,127,C,G,{1}{G},Creature,Elf Soldier,2,2,"Trample
+{5}{G}{G}: Put three +1/+1 counters on this creature.",No,Elf Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Gundabad Opportunist,101,C,R,{3}{R},Creature,Goblin Rogue,4,2,"When this creature enters, exile the top card of your library. Until the end of your next turn, you may play that card.",No,Goblin Rogue,No,No,No,No,,,,,Yes,
+The Hobbit,Hobbit Hole,184,C,Land,,Land,,,,"{T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.
+Halflingcycling {4} ({4}, Discard this card: Search your library for a Halfling card, reveal it, put it into your hand, then shuffle.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Iron Hills,185,C,Land,,Land,,,,"This land enters tapped.
+{T}: Add {R} or {W}.
+{2}{R}{W}, {T}, Sacrifice this land: Put two +1/+1 counters on target Dwarf you control. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Iron Hills Blacksmith,16,U,W,{1}{W},Creature,Dwarf Artificer,1,1,"Double strike
+When this creature enters, create a colorless Equipment artifact token named Axe with ""Equipped creature gets +1/+0"" and equip {2}.",No,Dwarf Artificer,No,No,No,No,,,,,Yes,
+The Hobbit,Iron Hills Stalwart,102,C,R,{4}{R},Creature,Dwarf Warrior,4,5,"Reach, trample
+When this creature enters, attach target Equipment you control to up to one target creature you control.",No,Dwarf Warrior,No,No,No,No,,,,,Yes,
+The Hobbit,Key to the Side-Door,175,U,Colourless,{1},Artifact,,,,"{2}, {T}: Target creature can't be blocked this turn.
+{1}, {T}, Discard a legendary card with the same name as a legendary permanent you control: Draw two cards.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Kíli the Resourceful,17,R,W,{1}{W},Creature,Dwarf Scout,1,2,"Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+As long as you have an enduring story, you may pay {0} rather than pay the equip cost of the first equip ability you activate each turn.
+Whenever another Dwarf or Equipment you control enters, draw a card. This ability triggers only once each turn.",Yes,Dwarf Scout,No,No,No,No,,,,,Yes,Name corrected from 'Kill the Resourceful'.
+The Hobbit,Lake-town,186,C,Land,,Land,,,,"This land enters tapped.
+{T}: Add {W} or {U}.
+{2}{W}{U}, {T}, Sacrifice this land: Put two +1/+1 counters on target Human you control. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Lake-town Lookout,18,C,W,{W},Creature,Human Scout,1,1,"When this creature dies, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,Human Scout,No,No,No,No,,,,,Yes,
+The Hobbit,Lake-town Mariners // Gone Fishing,44,U,U,{4}{U}{U} // {3}{U},Creature // Instant,Human Citizen // Adventure,6,5,"Lake-town Mariners:
+Vigilance
+Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)
+//
+Gone Fishing:
+Exile two target creatures and/or lands you control, then return them to the battlefield under their owner's control.",No,Human Citizen,No,No,No,No,,,,,Yes,
+The Hobbit,Lake-town Toymaker,19,U,W,{3}{W},Creature,Human Artificer,3,4,"At the beginning of combat on your turn, if you've drawn two or more cards this turn, another target creature you control gets +3/+0 and gains first strike until end of turn.",No,Human Artificer,No,No,No,No,,,,,Yes,
+The Hobbit,Lakeshore Apothecary,43,C,U,{1}{U},Creature,Human Cleric,1,2,"Vigilance
+Whenever you draw your second card each turn, put a +1/+1 counter on this creature.",No,Human Cleric,No,No,No,No,,,,,Yes,
+The Hobbit,Large Bear,159,U,Multicolour,{3}{B/G}{B/G},Creature,Bear,5,5,"Reach, trample, haste",No,Bear,No,No,No,No,,,,,Yes,
+The Hobbit,Little Bear,128,C,G,{2}{G},Creature,Bear,3,2,"Flash
+When this creature enters, untap another target creature you control. If that creature is a Bear, put a +1/+1 counter on it.",No,Bear,No,No,No,No,,,,,Yes,
+The Hobbit,Long Lake Nuisance,45,C,U,{3}{U},Creature,Bird,3,1,"Flying
+When this creature enters, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,Bird,No,No,No,No,,,,,Yes,
+The Hobbit,Long-Bodied Grey Dog,1,C,Colourless,{3},Creature,Dog,2,2,"Flash
+Reach
+When this creature enters, create a tapped Treasure token. (It's an artifact with ""{T}, Sacrifice this token: Add one mana of any color."")",No,Dog,No,No,Yes,No,,,,,Yes,
+The Hobbit,Magnificent End,20,C,W,{4}{W},Instant,,,,"This spell costs {3} less to cast if it targets a tapped creature.
+Magnificent End deals 5 damage to target creature.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Master's Councillors,47,U,U,{1}{U},Creature,Human Advisor,1,3,"Vigilance
+This creature gets +2/+0 for each graveyard with seven or more cards in it.
+Whenever you draw your second card each turn, target player mills three cards. (They put the top three cards of their library into their graveyard.)",No,Human Advisor,No,No,No,No,,,,,Yes,
+The Hobbit,Mirkwood,188,C,Land,,Land,,,,"This land enters tapped.
+{T}: Add {B} or {G}.
+{2}{B}{G}, {T}, Sacrifice this land: Put two +1/+1 counters on target Bear, Spider, or Wolf you control. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Mirkwood Meditator,48,C,U,{2}{U},Creature,Elf Druid,2,4,"Landfall — Whenever a land you control enters, you may have this creature's base power and toughness become 4/2 until end of turn.",No,Elf Druid,No,No,No,No,,,,,Yes,
+The Hobbit,Mirkwood Nurturer,160,C,Multicolour,{2}{G/U},Creature,Elf Ranger,3,2,"When this creature enters, return up to one other target permanent you control to its owner's hand. If you do, put a +1/+1 counter on this creature.",No,Elf Ranger,No,No,No,No,,,,,Yes,
+The Hobbit,Mirkwood Pathmaker,129,U,G,{2}{G},Creature,Elf Ranger,*,*,Mirkwood Pathmaker's power and toughness are each equal to the number of lands you control.,No,Elf Ranger,No,No,No,No,,,,,Yes,
+The Hobbit,Misty Mountains Raider,105,U,R,{4}{R},Creature,Goblin Soldier,4,4,"Whenever you attack, amass Goblins 2. (Put two +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,Goblin Soldier,No,No,No,No,,,,,Yes,
+The Hobbit,Moment of Glory,21,C,W,{W},Sorcery,,,,"Put a +1/+1 counter on target creature you control. If this spell was cast from a graveyard, also put a +1/+1 counter on each other creature you control.
+Flashback {4}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Nasty Little Rabbit,130,U,G,{G},Creature,Rabbit,1,2,"Ferocious — At the beginning of combat on your turn, if you control a creature with power 4 or greater, put a +1/+1 counter on this creature.",No,Rabbit,No,No,No,No,,,,,Yes,
+The Hobbit,Nighthowl Pursuer,78,U,B,{B},Creature,Wolf,1,1,"Menace (This creature can't be blocked except by two or more creatures.)
+Ferocious — Whenever this creature attacks while you control a creature with power 4 or greater, this creature gets +2/+2 until end of turn.",No,Wolf,No,No,No,No,,,,,Yes,Name corrected from 'Nightwolf Pursuer'.
+The Hobbit,"Nori, Teller of Tales",161,C,Multicolour,{1}{R/W},Creature,Dwarf Bard,2,2,"Whenever Nori attacks, target attacking creature gains first strike until end of turn.",Yes,Dwarf Bard,No,No,No,No,,,,,Yes,
+The Hobbit,Óin the Brave,106,C,R,{1}{R},Creature,Dwarf Warrior,1,3,"Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+As long as you have an enduring story, Óin gets +1/+0 and has haste.
+{1}, {T}, Discard a card: Draw a card.",Yes,Dwarf Warrior,No,No,No,No,,,,,Yes,Name corrected from 'Oin the Brave'.
+The Hobbit,Old Fat Spider,132,U,G,{4}{G}{G},Creature,Spider,6,7,"Reach
+This creature can't be blocked by creatures with power 2 or less.
+Whenever this creature becomes the target of a spell or ability an opponent controls, draw a card.",No,Spider,No,No,No,No,,,,,Yes,
+The Hobbit,Old Fat Spider,132,U,G,{4}{G}{G},Creature,Spider,6,7,"Reach
+This creature can't be blocked by creatures with power 2 or less.
+Whenever this creature becomes the target of a spell or ability an opponent controls, draw a card.",No,Spider,No,No,No,No,,,,,Yes,
+The Hobbit,Old Thrush,2,C,Colourless,{2},Creature,Bird,1,2,"Flying
+When this creature enters, you gain 2 life. You may search your library for a basic land card, reveal it, then shuffle and put that card on top.",No,Bird,No,No,No,No,,,,,Yes,
+The Hobbit,Ordinary Bear,133,C,G,{3}{G},Creature,Bear,4,5,,No,Bear,No,No,No,No,,,,,Yes,
+The Hobbit,"Ori, Keeper of Songs",23,C,W,{2}{W},Creature,Dwarf Bard,3,3,"Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+As long as you have an enduring story, Ori gets +1/+0 and has vigilance.",Yes,Dwarf Bard,No,No,No,No,,,,,Yes,
+The Hobbit,Patient Instructor,162,C,Multicolour,{2}{W/U},Creature,Human Citizen,2,2,"Vigilance
+When this creature enters, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,Human Citizen,No,No,No,No,,,,,Yes,
+The Hobbit,Pinecone Strike,107,C,R,{1}{R},Instant,,,,"Choose one or both —
+• Pinecone Strike deals 3 damage to target creature. If that creature would die this turn, exile it instead.
+• Destroy target artifact token.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Plunder the Trollshaws,51,C,U,{1}{U},Instant,,,,"Draw a card. If this spell was cast from a graveyard, draw two cards instead.
+Flashback {3}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Quarrel,135,C,G,{1}{G},Instant,,,,Target creature you control deals damage equal to its power to target creature an opponent controls.,No,,No,No,No,No,,,,,Yes,
+The Hobbit,Rage into the Valley,79,C,B,{2}{B},Sorcery,,,,"You draw a card and lose 1 life.
+Amass Goblins 2. (Put two +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Ragged Short Spear,108,C,R,{1}{R},Artifact,Equipment,,,"When this Equipment enters, you may discard a card. If you do, draw two cards.
+Equipped creature gets +2/+0.
+Equip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Ravenhill Flock,52,U,U,{3}{U},Creature,Bird,1,2,"Flying
+Whenever you draw a card, put a +1/+1 counter on this creature.",No,Bird,No,No,No,No,,,,,Yes,
+The Hobbit,Ravening Warg,80,C,B,{1}{B},Creature,Wolf,2,2,"Deathtouch
+Ferocious — Whenever this creature attacks while you control a creature with power 4 or greater, you gain 2 life.",No,Wolf,No,No,No,No,,,,,Yes,Name corrected from 'Ravening Wargs'.
+The Hobbit,Reverent Howl,81,C,B,{2}{B},Instant,,,,"Choose one —
+• Target player draws two cards and loses 2 life.
+• Target creature gets +2/+2 and gains lifelink until end of turn.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Rhovanion Rampager,82,R,B,{2}{B},Creature,Wolf,3,2,"Whenever this creature attacks, you may sacrifice another creature. If you do, put a number of +1/+1 counters on this creature equal to the sacrificed creature's power.
+When this creature dies, amass Goblins X, where X is this creature's power. (Put X +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)",No,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,Roll-Roll-Roll-Roll,54,R,U,{2}{U},Enchantment,Saga,,,"(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)
+I, II, III, IV — Exile up to one target creature or land you control. If you do, return it to the battlefield under its owner's control at the beginning of the next end step.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Silvan Reveler,163,U,Multicolour,{2}{G}{U},Creature,Elf Citizen,3,2,"When this creature enters, draw a card, then discard a card. If you discard a land card this way, put it from your graveyard onto the battlefield tapped.
+Landfall — Whenever a land you control enters, you may pay {1}{G}{U}. If you do, return this card from your graveyard to your hand.",No,Elf Citizen,No,No,No,No,,,,,Yes,
+The Hobbit,Smaug's Fury,111,C,R,{1}{R},Instant,,,,Target creature gets +3/+0 and gains reach and first strike until end of turn.,No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Smaug, the Great Calamity // Spew Flame",109,C,R,{5}{R}{R} // {4}{R},Creature // Sorcery,Dragon // Adventure,5,5,"Smaug, the Great Calamity:
+Flying
+//
+Spew Flame:
+Spew Flame deals 5 damage to target creature. (Then exile this card. You may cast the creature later from exile.)",Yes,Dragon,No,No,No,No,,,,,Yes,
+The Hobbit,Snowslope Hunter,112,U,R,{2}{R},Creature,Goblin Ranger,2,3,Sacrifice another creature or artifact: Exile the top card of your library. You may play it until the end of your next turn. Activate only during your turn and only once each turn.,No,Goblin Ranger,No,No,No,No,,,,,Yes,
+The Hobbit,Sound the Trumpets,55,U,U,{1}{U}{U},Instant,,,,"Counter target spell. If that spell's mana value was 2 or less, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Sting, Bilbo's Sword",178,R,Colourless,{2},Artifact,Equipment,,,"Flash
+When Sting enters, put a hone counter on Sting for each creature target opponent controls. Attach Sting to up to one target creature you control. (Each hone counter on an Equipment grants +1/+0 to equipped creature.)
+Equip {3}",Yes,,No,No,No,No,,,,,Yes,
+The Hobbit,Stir Up Trouble,84,C,B,{B},Sorcery,,,,"As an additional cost to cast this spell, sacrifice an artifact or creature or pay {4}.
+Destroy target creature.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Stone by Sunlight,27,U,W,{1}{W},Instant,,,,"Choose one —
+• Destroy target creature with power 4 or greater.
+• Until end of turn, target creature becomes an artifact in addition to its other types and gains indestructible. (Damage and effects that say ""destroy"" don't destroy it.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Stony-Voiced Goblins,85,C,B,{1}{B},Creature,Goblin Bard,1,1,"When this creature enters, each opponent discards a card.",No,Goblin Bard,No,No,No,No,,,,,Yes,Name corrected from 'Story-Voyaged Goblins'.
+The Hobbit,The Black Arrow,171,U,Colourless,{3},Artifact,Equipment,,,"Flash
+When The Black Arrow enters, it deals 1 damage to any target. If a Dragon is dealt damage this way, destroy it.
+Equipped creature gets +1/+1 and has reach.
+Equip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",Yes,,No,No,No,No,,,,,Yes,
+The Hobbit,The Chief Warg,150,U,Multicolour,{2}{B}{G},Creature,Wolf,3,3,"Menace (This creature can't be blocked except by two or more creatures.)
+Ferocious — Whenever you attack while you control a creature with power 4 or greater, you draw a card and lose 1 life.",Yes,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,The Eagles Are Coming!,12,R,W,{1}{W},Instant,,,,"Kicker {2}{W}{W} (You may pay an additional {2}{W}{W} as you cast this spell.)
+Choose target creature you own. If this spell was kicked, instead choose any number of target creatures you own. Return each chosen creature to your hand. At the beginning of the next upkeep, create a 4/4 white Bird Soldier creature token with flying for each creature returned to your hand this way.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,The Misty Mountains Cold,104,R,R,{2}{R},Enchantment,Saga,,,"(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)
+I, II, III, IV — Create a Treasure token. Then if you control four or more Treasures, sacrifice this Saga. If you do, create a 6/6 red Dragon creature token with flying. (A Treasure token is an artifact with ""{T}, Sacrifice this token: Add one mana of any color."")",No,,No,No,Yes,No,,,,,Yes,
+The Hobbit,The Mountain-king's Return,22,U,W,{2}{W},Enchantment,Saga,,,"(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)
+I — Recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)
+II — Return target creature card with mana value 3 or less from your graveyard to the battlefield.
+III — Put a +1/+1 counter on up to one target creature.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Thorin Oakenshield,165,U,Multicolour,{R}{W},Creature,Dwarf Noble,3,2,"Trample
+Storied (If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.)
+As long as you have an enduring story, artifacts and creatures you control have ward {1}.",Yes,Dwarf Noble,No,No,No,No,,,,,Yes,
+The Hobbit,Thranduil's Decree,56,U,U,{4}{U}{U},Instant,,,,"Counter target spell. If a permanent spell is countered this way, exile it instead of putting it into its owner's graveyard. You may cast that card without paying its mana cost for as long as it remains exiled.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,"Thranduil, Sindarin Liege // Silvan Rally",166,U,Multicolour,{2}{G/U}{G/U} // {1}{G/U}{G/U},Creature // Sorcery,Elf Noble // Adventure,2,3,"Thranduil, Sindarin Liege:
+Other Elves you control get +1/+1.
+Landfall — Whenever a land you control enters, create a 1/1 green Elf creature token.
+//
+Silvan Rally:
+Mill four cards, then put up to two land cards from among them into your hand. (Then exile this card. You may cast the creature later from exile.)",Yes,Elf Noble,No,No,No,No,,,,,Yes,
+The Hobbit,Thorin's Last Stand,28,C,W,{2}{W}{W},Instant,,,,"Choose one —
+• Creatures you control get +2/+1 until end of turn.
+• Destroy target artifact or enchantment. You gain 2 life.",No,,No,No,No,No,,,,,Yes,Name corrected from 'Thror's Last Stand'.
+The Hobbit,Thrór's Map,179,U,Colourless,{2},Artifact,,,,"When Thrór's Map enters, search your library for a basic land card, reveal it, put it into your hand, then shuffle.
+{2}, {T}: Draw a card, then discard a card.",Yes,,No,No,No,No,,,,,Yes,
+The Hobbit,Tidings of War,115,C,R,{R},Sorcery,,,,"Amass Goblins 1. If this spell was cast from a graveyard, amass Goblins 3 instead. (To amass Goblins X, put X +1/+1 counters on an Army you control. It's also a Goblin. If you don't control an Army, create a 0/0 black Goblin Army creature token first.)
+Flashback {3}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Troll Negotiations,138,U,G,{2}{G}{G},Sorcery,,,,Put two +1/+1 counters on target creature you control. Then it fights target creature an opponent controls. (Each deals damage equal to its power to the other.),No,,No,No,No,No,,,,,Yes,
+The Hobbit,Troop of Ponies,3,U,Colourless,{2},Creature,Horse,2,1,"{2}, {T}, Sacrifice this creature: Search your library for up to two basic land cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle.",No,Horse,No,No,No,No,,,,,Yes,
+The Hobbit,Uneasy Partings,58,C,U,{3}{U},Instant,,,,"This spell costs {1} less to cast if it targets an attacking nontoken creature.
+Target creature's owner puts it on their choice of the top or bottom of their library.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Velvetwing Butterflies // Gaze in Wonder,30,C,W,{2}{W} // {1}{W},Creature // Instant,Insect // Adventure,2,2,"Velvetwing Butterflies:
+Flying
+//
+Gaze in Wonder:
+Tap one or two target creatures. (Then exile this card. You may cast the creature later from exile.)",No,Insect,No,No,No,No,,,,,Yes,
+The Hobbit,Vow to Erebor,31,C,W,{1}{W},Instant,,,,"Untap target creature you control. It gets +2/+2 until end of turn. If it's a Dwarf, you may attach an Equipment you control to it.",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Warg Tactics,139,C,G,{1}{G},Instant,,,,"Choose one —
+• Destroy target creature with flying.
+• Put a +1/+1 counter on target creature you control. It gains trample and hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Wargling,140,C,G,{1}{G},Creature,Wolf,2,2,"Ferocious — Whenever this creature attacks while you control a creature with power 4 or greater, until end of turn, this creature gets +1/+0 and creatures you control gain trample.",No,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,Well-Worn Spatula,180,C,Colourless,{1},Artifact,Equipment,,,"When this Equipment enters, you gain 2 life.
+Equipped creature gets +1/+1.
+Equip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Hobbit,Wilderland Scrounger,141,U,G,{4}{G},Creature,Wolf,3,6,"Ferocious — Whenever this creature attacks while you control a creature with power 4 or greater, put a +1/+1 counter on each creature you control.",No,Wolf,No,No,No,No,,,,,Yes,
+The Hobbit,Wood Elves,142,C,G,{2}{G},Creature,Elf Scout,1,1,"When this creature enters, search your library for a Forest card, put that card onto the battlefield, then shuffle.",No,Elf Scout,No,No,No,No,,,,,Yes,
+The Hobbit,Woodland Weavemaster,143,U,G,{1}{G},Creature,Elf Druid,1,2,"Vigilance
+Whenever another Elf you control enters, this creature gets +1/+1 until end of turn.
+{T}: Add X mana of any one color, where X is this creature's power. Spend this mana only to cast Elf spells and activate abilities of Elf sources.",No,Elf Druid,No,No,No,No,,,,,Yes,Name corrected from 'Woodland Waymaster'.
+The Lord of the Rings,"Aragorn, Company Leader",191,R,Multicolour,{1}{G}{W},Creature,Human Ranger,3,3,"Whenever the Ring tempts you, if you chose a creature other than Aragorn as your Ring-bearer, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on Aragorn.
+Whenever you put one or more counters on Aragorn, put one of each of those kinds of counters on up to one other target creature.",Yes,Human Ranger,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Arwen's Gift,39,C,U,{3}{U},Sorcery,,,,"This spell costs {1} less to cast if you control two or more legendary creatures.
+Scry 2, then draw two cards.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Banish from Edoras,1,C,W,{4}{W},Sorcery,,,,"This spell costs {2} less to cast if it targets a tapped creature.
+Exile target creature.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Barrow-Blade,237,U,Colourless,{1},Artifact,Equipment,,,"Equipped creature gets +1/+1.
+Whenever equipped creature blocks or becomes blocked by a creature, that creature loses all abilities until end of turn.
+Equip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Bill Ferny, Bree Swindler",42,U,U,{1}{U},Creature,Human Rogue,2,1,"Whenever Bill Ferny becomes blocked, choose one —
+• Create a Treasure token. (It's an artifact with ""{T}, Sacrifice this token: Add one mana of any color."")
+• Target opponent gains control of target Horse you control. If they do, remove Bill Ferny from combat and create three Treasure tokens.",Yes,Human Rogue,No,No,Yes,No,,,,,Yes,
+The Lord of the Rings,Bill the Pony,3,U,W,{3}{W},Creature,Horse,1,4,"When Bill the Pony enters, create two Food tokens. (They're artifacts with ""{2}, {T}, Sacrifice this token: You gain 3 life."")
+Sacrifice a Food: Until end of turn, target creature you control assigns combat damage equal to its toughness rather than its power.",Yes,Horse,No,Yes,No,No,,,,,Yes,
+The Lord of the Rings,Birthday Escape,43,C,U,{U},Sorcery,,,,Draw a card. The Ring tempts you.,No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,"Butterbur, Bree Innkeeper",197,U,Multicolour,{2}{G}{W},Creature,Human Peasant,3,3,"At the beginning of your end step, if you don't control a Food, create a Food token. (It's an artifact with ""{2}, {T}, Sacrifice this token: You gain 3 life."")",Yes,Human Peasant,No,Yes,No,No,,,,,Yes,
+The Lord of the Rings,Captain of Umbar,45,C,U,{2}{U},Creature,Human Pirate,2,3,"{1}, {T}: Draw a card, then discard a card.",No,Human Pirate,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Council's Deliberation,46,U,U,{1}{U},Instant,,,,"Draw a card.
+Whenever you scry, if you control an Island, you may exile this card from your graveyard. If you do, draw a card.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Deceive the Messenger,47,C,U,{U},Instant,,,,"Target creature gets -3/-0 until end of turn.
+Amass Orcs 1. (Put a +1/+1 counter on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Dreadful as the Storm,48,C,U,{2}{U},Instant,,,,Target creature has base power and toughness 5/5 until end of turn. The Ring tempts you.,No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Dúnedain Blade,6,C,W,{1}{W},Artifact,Equipment,,,"Equipped creature gets +2/+1.
+Equip Human {1}
+Equip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Eagles of the North,7,C,W,{5}{W},Creature,Bird Soldier,3,3,"Flying
+When this creature enters, creatures you control get +1/+0 and gain first strike until end of turn.
+Plainscycling {1} ({1}, Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",No,Bird Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,East-Mark Cavalier,9,C,W,{1}{W},Creature,Human Knight,2,2,"Vigilance
+Whenever this creature deals damage to a Goblin or Orc, destroy that creature.",No,Human Knight,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Eastfarthing Farmer,8,C,W,{2}{W},Creature,Halfling Peasant,2,3,"When this creature enters, create a Food token. When you do, target creature you control gets +1/+1 until end of turn for each Food you control. (A Food token is an artifact with ""{2}, {T}, Sacrifice this token: You gain 3 life."")",No,Halfling Peasant,No,Yes,No,No,,,,,Yes,
+The Lord of the Rings,"Elrond, Lord of Rivendell",49,U,U,{2}{U},Creature,Elf Noble,3,2,"Whenever Elrond or another creature you control enters, scry 1. If this is the second time this ability has resolved this turn, the Ring tempts you.",Yes,Elf Noble,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Ent-Draught Basin,238,U,Colourless,{2},Artifact,,,,"{X}, {T}: Put a +1/+1 counter on target creature with power X. Activate only as a sorcery.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Errand-Rider of Gondor,11,C,W,{2}{W},Creature,Human Soldier,3,2,"When this creature enters, draw a card. Then if you don't control a legendary creature, put a card from your hand on the bottom of your library.",No,Human Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Escape from Orthanc,12,C,W,{W},Instant,,,,Target creature gets +1/+3 and gains flying until end of turn. Untap it.,No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Esquire of the King,13,C,W,{W},Creature,Human Soldier,1,1,"{4}{W}, {T}: Creatures you control get +1/+1 until end of turn. This ability costs {2} less to activate if you control a legendary creature.",No,Human Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Fog on the Barrow-Downs,168,C,W,{2}{W},Enchantment,Aura,,,"Enchant creature
+Enchanted creature is a Spirit and can't attack or block. (It loses all other creature types.)",No,,No,No,No,No,,,,,Yes,"Name corrected from 'Eye on the Barrow-Downs'. Photo shows an Aura-type Barrow-Downs card; auto-filled data (Fog on the Barrow-Downs, Sorcery) may not match - verify."
+The Lord of the Rings,"Faramir, Field Commander",14,U,W,{3}{W},Creature,Human Soldier,3,3,"At the beginning of your end step, if a creature died under your control this turn, draw a card.
+Whenever the Ring tempts you, if you chose a creature other than Faramir as your Ring-bearer, create a 1/1 white Human Soldier creature token.",Yes,Human Soldier,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Forest,721,C,Land,,Land,Forest,,,({T}: Add {G}.),No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Frodo Baggins,205,U,Multicolour,{G}{W},Creature,Halfling Scout,1,3,"Whenever Frodo Baggins or another legendary creature you control enters, the Ring tempts you.
+As long as Frodo Baggins is your Ring-bearer, it must be blocked if able.",Yes,Halfling Scout,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Galadriel of Lothlórien,206,R,Multicolour,{1}{G}{U},Creature,Elf Noble,3,3,"Whenever the Ring tempts you, if you chose a creature other than Galadriel as your Ring-bearer, scry 3.
+Whenever you scry, you may reveal the top card of your library. If a land card is revealed this way, put it onto the battlefield tapped.",Yes,Elf Noble,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Gandalf's Sanction,208,U,Multicolour,{1}{U}{R},Sorcery,,,,"Gandalf's Sanction deals X damage to target creature, where X is the number of instant and sorcery cards in your graveyard. Excess damage is dealt to that creature's controller instead.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Gandalf, Friend of the Shire",50,U,U,{3}{U},Creature,Avatar Wizard,2,4,"Flash
+You may cast sorcery spells as though they had flash.
+Whenever the Ring tempts you, if you chose a creature other than Gandalf as your Ring-bearer, draw a card.",Yes,Avatar Wizard,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Glorious Gale,51,C,U,{1}{U},Instant,,,,"Counter target creature spell. If it was a legendary spell, the Ring tempts you.",No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Grey Havens Navigator,53,C,U,{2}{U},Creature,Elf Pilot,3,2,"Flash
+When this creature enters, scry 1.",No,Elf Pilot,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Hithlain Knots,54,C,U,{1}{U},Instant,,,,"Tap target creature. Scry 1.
+Draw a card.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Hobbit's Sting,20,C,W,{1}{W},Instant,,,,"Hobbit's Sting deals X damage to target creature, where X is the number of creatures you control plus the number of Foods you control.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Ioreth of the Healing House,56,U,U,{2}{U},Creature,Human Cleric,1,4,"{T}: Untap another target permanent.
+{T}: Untap two other target legendary creatures.",Yes,Human Cleric,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Isolation at Orthanc,57,C,U,{3}{U},Instant,,,,Put target creature into its owner's library second from the top.,No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Ithilien Kingfisher,177,C,U,{2}{U},Creature,Bird,2,1,"Flying
+When this creature dies, draw a card.",No,Bird,No,No,No,No,,,,,Yes,Name corrected from 'Ithilien Kingsfisher'.
+The Lord of the Rings,Knights of Dol Amroth,59,C,U,{3}{U},Creature,Human Knight,3,3,"Whenever you draw your second card each turn, put a +1/+1 counter on this creature.",No,Human Knight,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Landroval, Horizon Witness",21,U,W,{4}{W},Creature,Bird Noble,3,4,"Flying
+Whenever two or more creatures you control attack a player, target attacking creature without flying gains flying until end of turn.",Yes,Bird Noble,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Legolas, Counter of Kills",212,U,Multicolour,{2}{G}{U},Creature,Elf Archer,2,3,"Reach
+Whenever you scry, if Legolas is tapped, you may untap it. Do this only once each turn.
+Whenever a creature an opponent controls dies, put a +1/+1 counter on Legolas.",Yes,Elf Archer,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Lost to Legend,22,U,W,{W}{W},Instant,,,,"Put target nonland historic permanent into its owner's library fourth from the top. (Artifacts, legendaries, and Sagas are historic.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Meneldor, Swift Savior",62,U,U,{3}{U},Creature,Bird Soldier,3,3,"Flying
+Whenever Meneldor deals combat damage to a player, exile up to one target creature you own, then return it to the battlefield under your control.",Yes,Bird Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Mirror of Galadriel,244,U,Colourless,{2},Artifact,,,,"{5}, {T}: Scry 1, then draw a card. This ability costs {1} less to activate for each legendary creature you control.",Yes,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Mountain,719,C,Land,,Land,Mountain,,,({T}: Add {R}.),No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Nimble Hobbit,23,C,W,{1}{W},Creature,Halfling Peasant,1,3,"Whenever this creature attacks, you may sacrifice a Food or pay {2}{W}. When you do, tap target creature an opponent controls.",No,Halfling Peasant,No,Yes,No,No,,,,,,Not located in collection photos - please verify presence.
+The Lord of the Rings,Nimrodel Watcher,63,C,U,{1}{U},Creature,Elf Scout,2,1,"Whenever you scry, this creature gets +1/+0 until end of turn and can't be blocked this turn. This ability triggers only once each turn.",No,Elf Scout,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Now for Wrath, Now for Ruin!",24,C,W,{3}{W},Sorcery,,,,Put a +1/+1 counter on each creature you control. They gain vigilance until end of turn. The Ring tempts you.,No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Old Man Willow,217,U,Multicolour,{2}{B}{G},Creature,Treefolk,*,*,"Old Man Willow's power and toughness are each equal to the number of lands you control.
+Whenever Old Man Willow attacks, you may sacrifice another creature or a token. When you do, target creature an opponent controls gets -2/-2 until end of turn.",Yes,Treefolk,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Pelargir Survivor,64,C,U,{1}{U},Creature,Human Peasant,1,3,"{T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell.
+{5}{U}, {T}: Target player mills three cards. (They put the top three cards of their library into their graveyard.)",No,Human Peasant,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Pippin, Guard of the Citadel",218,R,Multicolour,{W}{U},Creature,Halfling Soldier,2,2,"Vigilance, ward {1}
+{T}: Another target creature you control gains protection from the card type of your choice until end of turn. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything of that type.)",Yes,Halfling Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Prince Imrahil the Fair,219,U,Multicolour,{W}{U},Creature,Human Noble,2,2,"Whenever you draw your second card each turn, create a 1/1 white Human Soldier creature token.",Yes,Human Noble,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Protector of Gondor,25,C,W,{3}{W},Creature,Human Soldier,3,3,"When this creature enters, create a 1/1 white Human Soldier creature token.",No,Human Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Reprieve,26,U,W,{1}{W},Instant,,,,"Return target spell to its owner's hand.
+Draw a card.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Ringsight,220,U,Multicolour,{1}{U}{B},Sorcery,,,,"The Ring tempts you. Search your library for a card that shares a color with a legendary creature you control, reveal it, put it into your hand, then shuffle.",No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Rise of the Witch-king,221,U,Multicolour,{2}{B}{G},Sorcery,,,,"Each player sacrifices a creature of their choice. If you sacrificed a creature this way, you may return another permanent card from your graveyard to the battlefield.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Rosie Cotton of South Lane,27,U,W,{2}{W},Creature,Halfling Peasant,1,1,"When Rosie Cotton enters, create a Food token. (It's an artifact with ""{2}, {T}, Sacrifice this token: You gain 3 life."")
+Whenever you create a token, put a +1/+1 counter on target creature you control other than Rosie Cotton.",Yes,Halfling Peasant,No,Yes,No,No,,,,,Yes,
+The Lord of the Rings,Samwise the Stouthearted,28,U,W,{1}{W},Creature,Halfling Peasant,2,1,"Flash
+When Samwise enters, choose up to one target permanent card in your graveyard that was put there from the battlefield this turn. Return it to your hand. Then the Ring tempts you.",Yes,Halfling Peasant,Yes,No,No,Yes,,,,,Yes,Name corrected from 'Samwise the Southhearted'. Possible duplicate of row 189 (Samwise the Stouthearted) - verify.
+The Lord of the Rings,Samwise the Stouthearted,28,U,W,{1}{W},Creature,Halfling Peasant,2,1,"Flash
+When Samwise enters, choose up to one target permanent card in your graveyard that was put there from the battlefield this turn. Return it to your hand. Then the Ring tempts you.",Yes,Halfling Peasant,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Saruman the White,67,U,U,{4}{U},Creature,Avatar Wizard,4,4,"Ward {2}
+Whenever you cast your second spell each turn, amass Orcs 2. (Put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",Yes,Avatar Wizard,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Saruman's Trickery,68,U,U,{1}{U}{U},Instant,,,,"Counter target spell.
+Amass Orcs 1. (Put a +1/+1 counter on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Second Breakfast,29,C,W,{2}{W},Instant,,,,"Up to two target creatures each get +2/+1 until end of turn. Create a Food token. (It's an artifact with ""{2}, {T}, Sacrifice this token: You gain 3 life."")",No,,No,Yes,No,No,,,,,Yes,
+The Lord of the Rings,Shadow Summoning,226,U,Multicolour,{W}{B},Sorcery,,,,Create two tapped 1/1 white Spirit creature tokens with flying.,No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Shagrat, Loot Bearer",228,R,Multicolour,{2}{B}{R},Creature,Orc Soldier,4,4,"Whenever Shagrat attacks, attach up to one target Equipment to it. Then amass Orcs X, where X is the number of Equipment attached to Shagrat. (Control of the Equipment doesn't change. To amass Orcs X, put X +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",Yes,Orc Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Shire Scarecrow,249,C,Colourless,{2},Artifact Creature,Scarecrow,0,3,"Defender
+{1}: Add one mana of any color. Activate only once each turn.",No,Scarecrow,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Shire Shirriff,30,U,W,{1}{W},Creature,Halfling Soldier,2,2,"Vigilance
+When this creature enters, you may sacrifice a token. When you do, exile target creature an opponent controls until this creature leaves the battlefield.",No,Halfling Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Shire Terrace,261,C,Land,,Land,,,,"{T}: Add {C}.
+{1}, {T}, Sacrifice this land: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Soldier of the Grey Host,171,C,W,{3}{W},Creature,Spirit Soldier,2,2,"Flash
+Flying
+When this creature enters, target creature gets +2/+0 until end of turn.",No,Spirit Soldier,No,No,No,No,,,,,Yes,Name corrected from 'Soldiers of the Grey Host'.
+The Lord of the Rings,Soothing of Sméagol,70,C,U,{1}{U},Instant,,,,Return target nontoken creature to its owner's hand. The Ring tempts you.,No,,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Stalwarts of Osgiliath,33,C,W,{4}{W},Creature,Human Soldier,4,3,"When this creature enters, the Ring tempts you.
+Whenever you draw your second card each turn, put a +1/+1 counter on this creature.",No,Human Soldier,Yes,No,No,Yes,,,,,Yes,
+The Lord of the Rings,Stone of Erech,251,U,Colourless,{1},Artifact,,,,"If a creature an opponent controls would die, exile it instead.
+{2}, {T}, Sacrifice Stone of Erech: Exile target player's graveyard. Draw a card.",Yes,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,"Strider, Ranger of the North",232,U,Multicolour,{2}{R}{G},Creature,Human Ranger,4,4,"Landfall — Whenever a land you control enters, target creature gets +1/+1 until end of turn. Then if that creature has power 4 or greater, it gains first strike until end of turn.",Yes,Human Ranger,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Tales of the Entwives,,,,,,,,,,,,,,,,,,,,,Card not found in database - please verify name/spelling from photo. Not located in collection photos - please verify presence.
+The Lord of the Rings,The Grey Havens,255,U,Land,,Land,,,,"When The Grey Havens enters, scry 1.
+{T}: Add {C}.
+{T}: Add one mana of any color among legendary creature cards in your graveyard.",Yes,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Took Reaper,35,C,W,{1}{W},Creature,Halfling Peasant,2,1,"When this creature dies, the Ring tempts you.",No,Halfling Peasant,Yes,No,No,Yes,,,,,,Not located in collection photos - please verify presence.
+The Lord of the Rings,Treason of Isengard,74,C,U,{2}{U},Sorcery,,,,"Put up to one target instant or sorcery card from your graveyard on top of your library.
+Amass Orcs 2. (To amass Orcs 2, put two +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)",No,,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Uglúk of the White Hand,235,U,Multicolour,{2}{B}{R},Creature,Orc Soldier,3,3,"Whenever another creature you control dies, put a +1/+1 counter on Uglúk. If that creature was a Goblin or Orc, put two +1/+1 counters on Uglúk instead.",Yes,Orc Soldier,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Westfold Rider,37,C,W,{1}{W},Creature,Human Knight,3,1,Sacrifice this creature: Destroy target artifact or enchantment. Activate only as a sorcery.,No,Human Knight,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Willow-Wind,76,C,U,{4}{U},Creature,Elemental,3,4,"Flying
+When this creature enters, scry 2.",No,Elemental,No,No,No,No,,,,,Yes,
+The Lord of the Rings,Wizard's Rockets,252,C,Colourless,{1},Artifact,,,,"This artifact enters tapped.
+{X}, {T}, Sacrifice this artifact: Add X mana in any combination of colors.
+When this artifact is put into a graveyard from the battlefield, draw a card.",No,,No,No,No,No,,,,,Yes,
