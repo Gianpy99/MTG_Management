@@ -74,3 +74,8 @@ class DeckCardOut(BaseModel):
     status: str
     notes: str
     card: CardOut
+
+
+class DeckImportIn(BaseModel):
+    text: str
+    replace: bool = True

@@ -38,9 +38,9 @@ function switchView(name) {
 async function loadDashboard() {
   const s = await api.get("collection/summary");
   document.getElementById("dash-cards").innerHTML = [
-    stat("Unique owned", `${s.unique_owned}/${s.unique_total}`, `${s.completion}% complete`, s.completion),
+    stat("Catalogued owned", `${s.unique_owned}/${s.unique_total}`, `${s.completion}% del catalogo`, s.completion),
     stat("Total copies", s.total_copies, "physical cards"),
-    stat("Missing", s.unique_missing, "unique cards"),
+    stat("Missing (catalogue)", s.unique_missing, "catalogued cards not owned"),
     stat("Key Aragorn gaps", s.missing_key_aragorn, "missing Rare/Mythic (synergy ≥3)"),
     stat("Aragorn deck", `${s.deck_slots_filled}/${s.deck_size_target}`, `${s.deck_to_buy} still to buy`),
     stat("Wishlist value", `£${s.wishlist_value}`, "at target price"),
@@ -91,7 +91,7 @@ async function refreshCollection() {
     .map(
       (c) => `<tr data-id="${c.id}">
         <td>${c.set_name}</td><td>${c.collector_number}</td>
-        <td>${c.card_name} ${c.legendary ? "⭐" : ""}</td>
+        <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
         <td>${c.aragorn_synergy || ""}</td>
         <td><div class="qty">
@@ -106,6 +106,10 @@ async function refreshCollection() {
 }
 
 document.querySelector("#col-table tbody").addEventListener("click", async (e) => {
+  if (e.target.classList.contains("card-link")) {
+    openCardModal(decodeURIComponent(e.target.dataset.name));
+    return;
+  }
   const tr = e.target.closest("tr");
   if (!tr) return;
   const id = tr.dataset.id;
@@ -208,7 +212,7 @@ async function loadDeck() {
   tbody.innerHTML = cards
     .map(
       (d) => `<tr data-id="${d.id}">
-        <td>${d.card.card_name}</td>
+        <td><button class="card-link" data-name="${encodeURIComponent(d.card.card_name)}">${d.card.card_name}</button></td>
         <td>${d.role || ""}</td>
         <td>${d.card.quantity > 0 ? '<span class="pill owned">owned</span>' : '<span class="pill missing">need</span>'}</td>
         <td>${d.status}</td>
@@ -220,10 +224,30 @@ async function loadDeck() {
 }
 
 document.querySelector("#deck-table tbody").addEventListener("click", async (e) => {
+  if (e.target.classList.contains("card-link")) {
+    openCardModal(decodeURIComponent(e.target.dataset.name));
+    return;
+  }
   if (e.target.dataset.act !== "del") return;
   const id = e.target.closest("tr").dataset.id;
   await api.send("DELETE", `decks/aragorn/cards/${id}`);
   loadDeck();
+});
+
+// ---------- Deck import (paste decklist) ----------
+document.getElementById("deck-import-btn").addEventListener("click", async () => {
+  const text = document.getElementById("deck-import-text").value;
+  const replace = document.getElementById("deck-import-replace").checked;
+  const out = document.getElementById("deck-import-result");
+  if (!text.trim()) { out.textContent = "Incolla prima una lista."; return; }
+  out.textContent = "Importazione\u2026";
+  try {
+    const data = await api.send("POST", "decks/aragorn/import", { text, replace });
+    out.textContent = JSON.stringify(data, null, 2);
+    loadDeck();
+  } catch (err) {
+    out.textContent = "Errore: " + err.message;
+  }
 });
 
 // ---------- Import ----------
@@ -252,5 +276,67 @@ function debounce(fn, ms) {
   let t;
   return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
 }
+
+// ---------- Card modal (Scryfall image + Cardmarket link) ----------
+const scryfallCache = new Map();
+
+function cardmarketUrl(name) {
+  // Cardmarket search for the card name (Magic Single).
+  return "https://www.cardmarket.com/en/Magic/Products/Search?searchString=" + encodeURIComponent(name);
+}
+
+async function fetchScryfall(name) {
+  if (scryfallCache.has(name)) return scryfallCache.get(name);
+  const url = "https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(name);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Scryfall: carta non trovata");
+  const data = await res.json();
+  scryfallCache.set(name, data);
+  return data;
+}
+
+async function openCardModal(name) {
+  const overlay = document.getElementById("card-modal");
+  const img = document.getElementById("modal-img");
+  const nameEl = document.getElementById("modal-name");
+  const typeEl = document.getElementById("modal-type");
+  const oracleEl = document.getElementById("modal-oracle");
+  const scry = document.getElementById("modal-scryfall");
+  const cm = document.getElementById("modal-cardmarket");
+
+  nameEl.textContent = name;
+  typeEl.textContent = "";
+  oracleEl.textContent = "Caricamento da Scryfall…";
+  img.removeAttribute("src");
+  scry.href = "https://scryfall.com/search?q=" + encodeURIComponent('!"' + name + '"');
+  cm.href = cardmarketUrl(name);
+  overlay.hidden = false;
+
+  try {
+    const c = await fetchScryfall(name);
+    const imgUri =
+      (c.image_uris && c.image_uris.normal) ||
+      (c.card_faces && c.card_faces[0].image_uris && c.card_faces[0].image_uris.normal);
+    if (imgUri) img.src = imgUri;
+    nameEl.textContent = c.name || name;
+    typeEl.textContent = [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
+    oracleEl.textContent = c.oracle_text || (c.card_faces ? c.card_faces.map((f) => f.oracle_text).join("\n//\n") : "");
+    if (c.scryfall_uri) scry.href = c.scryfall_uri;
+    if (c.purchase_uris && c.purchase_uris.cardmarket) cm.href = c.purchase_uris.cardmarket;
+  } catch (err) {
+    oracleEl.textContent = "Non trovata su Scryfall. Usa i link qui sotto per cercarla.";
+  }
+}
+
+function closeCardModal() {
+  document.getElementById("card-modal").hidden = true;
+}
+document.getElementById("modal-close").addEventListener("click", closeCardModal);
+document.getElementById("card-modal").addEventListener("click", (e) => {
+  if (e.target.id === "card-modal") closeCardModal();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeCardModal();
+});
 
 loadDashboard();

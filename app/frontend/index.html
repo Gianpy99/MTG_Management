@@ -80,6 +80,16 @@
     <!-- Deck -->
     <section id="view-deck" class="view">
       <div class="cards" id="deck-stats"></div>
+      <details class="panel" id="deck-import-panel">
+        <summary><strong>⬆️ Importa lista mazzo</strong> (incolla la decklist generata dall'AI)</summary>
+        <p class="hint">Una carta per riga, es. <code>1 Aragorn, the Uniter</code> oppure <code>1x Gandalf the Grey</code>. Le carte non presenti in collezione vengono aggiunte come <em>Need</em> (da comprare).</p>
+        <textarea id="deck-import-text" rows="10" placeholder="1 Aragorn, the Uniter&#10;1 Gandalf the Grey&#10;1 Arwen, Mortal Queen&#10;..."></textarea>
+        <label class="hint"><input type="checkbox" id="deck-import-replace" checked /> Sostituisci il mazzo attuale</label>
+        <div>
+          <button id="deck-import-btn" class="primary">Importa mazzo</button>
+        </div>
+        <pre id="deck-import-result"></pre>
+      </details>
       <div class="panel" id="deck-validation"></div>
       <div class="table-wrap">
         <table id="deck-table">
@@ -106,6 +116,24 @@
       </div>
     </section>
   </main>
+
+  <div id="card-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <div class="modal-body">
+        <div class="modal-img"><img id="modal-img" alt="" /></div>
+        <div class="modal-info">
+          <h2 id="modal-name"></h2>
+          <p id="modal-type" class="hint"></p>
+          <pre id="modal-oracle"></pre>
+          <div class="modal-links">
+            <a id="modal-scryfall" class="btn" target="_blank" rel="noopener">🔍 Scryfall</a>
+            <a id="modal-cardmarket" class="btn" target="_blank" rel="noopener">🛒 Cardmarket</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

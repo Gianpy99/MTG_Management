@@ -121,3 +121,72 @@ button.primary, .primary { background: var(--gold); color: var(--bg); border: no
 pre { white-space: pre-wrap; color: var(--muted); font-size: 0.82rem; }
 .ok { color: var(--green); }
 .err { color: var(--red); }
+
+/* Clickable card name */
+.card-link {
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline dotted var(--gold);
+}
+.card-link:hover { color: var(--gold); }
+
+/* Deck import textarea */
+textarea {
+  width: 100%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-family: "Consolas", monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+  margin: 0.5rem 0;
+}
+details.panel summary { cursor: pointer; color: var(--gold); }
+
+/* Card modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+.modal-overlay[hidden] { display: none; }
+.modal {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.2rem;
+}
+.modal-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+.modal-body { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+.modal-img img { width: 240px; max-width: 100%; border-radius: 10px; display: block; }
+.modal-info { flex: 1; min-width: 220px; }
+.modal-info h2 { color: var(--gold); margin-top: 0; }
+.modal-links { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }

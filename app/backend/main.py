@@ -24,6 +24,7 @@ from schemas import (
     CardOut,
     DeckCardIn,
     DeckCardOut,
+    DeckImportIn,
     QuantityUpdate,
     WishlistIn,
     WishlistOut,
@@ -288,6 +289,96 @@ def delete_deck_card(slot_id: int, db: Session = Depends(get_db)) -> dict:
     db.delete(slot)
     db.commit()
     return {"deleted": slot_id}
+
+
+_DECK_LINE = re.compile(r"^\s*(?:(\d+)\s*[xX]?\s+)?(.+?)\s*$")
+_SKIP_PREFIXES = ("//", "#", "deck", "commander:", "sideboard", "sb:", "maybeboard", "about")
+
+
+def _parse_decklist(text: str) -> list[tuple[int, str]]:
+    """Parse lines like '1 Card Name', '1x Card Name', 'Card Name'.
+
+    Ignores empty lines, comments and section headers. Strips a trailing set
+    hint in parentheses, e.g. 'Aragorn, the Uniter (LTR) 192'.
+    """
+    out: list[tuple[int, str]] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        low = line.lower()
+        if low.startswith(_SKIP_PREFIXES) and not _DECK_LINE.match(line).group(1):
+            # A pure header like "Commander:" / "Deck" with no card after it.
+            if low in ("deck", "sideboard", "maybeboard") or low.endswith(":"):
+                continue
+        m = _DECK_LINE.match(line)
+        if not m:
+            continue
+        qty = int(m.group(1)) if m.group(1) else 1
+        name = m.group(2).strip()
+        # Drop trailing set/collector hints: "(LTR) 192" or "[LTR]".
+        name = re.sub(r"\s*[\(\[][A-Za-z0-9]{2,5}[\)\]]\s*\d*\s*$", "", name).strip()
+        if name:
+            out.append((qty, name))
+    return out
+
+
+@app.post("/api/decks/aragorn/import")
+def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
+    parsed = _parse_decklist(payload.text)
+    if not parsed:
+        raise HTTPException(status_code=400, detail="No card lines found in decklist")
+
+    if payload.replace:
+        db.query(DeckCard).delete()
+        db.flush()
+
+    matched = 0
+    created = 0
+    skipped_dupes: list[str] = []
+    added_slots = 0
+    seen_card_ids: set[int] = set()
+
+    for _, name in parsed:
+        card = (
+            db.query(Card)
+            .filter(func.lower(Card.card_name) == name.lower())
+            .order_by(Card.quantity.desc())
+            .first()
+        )
+        if card is None:
+            # Card outside the current catalogue: create a placeholder to buy.
+            card = Card(set_name="Unknown", card_name=name, collector_number="", quantity=0)
+            db.add(card)
+            db.flush()
+            created += 1
+        else:
+            matched += 1
+
+        if card.id in seen_card_ids:
+            skipped_dupes.append(name)
+            continue
+        seen_card_ids.add(card.id)
+
+        is_cmd = name.lower() == COMMANDER_NAME.lower()
+        slot = DeckCard(
+            card_id=card.id,
+            quantity=1,
+            is_commander=is_cmd,
+            role="Commander" if is_cmd else "",
+            status="Owned" if card.quantity >= 1 else "Need",
+        )
+        db.add(slot)
+        added_slots += 1
+
+    db.commit()
+    return {
+        "slots": added_slots,
+        "matched_in_collection": matched,
+        "created_as_need": created,
+        "skipped_duplicates": skipped_dupes,
+        "replaced": payload.replace,
+    }
 
 
 def _colour_identity(card: Card) -> set[str]:
