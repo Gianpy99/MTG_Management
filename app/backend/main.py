@@ -38,9 +38,9 @@ from seed import seed_if_empty
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
-# Aragorn, the Uniter — Bant colour identity.
+# Aragorn, the Uniter — {R}{G}{W}{U}: four-colour identity (everything but black).
 COMMANDER_NAME = "Aragorn, the Uniter"
-ALLOWED_COLOUR_IDENTITY = {"W", "U", "G"}
+ALLOWED_COLOUR_IDENTITY = {"W", "U", "R", "G"}
 DECK_SIZE = 100
 
 app = FastAPI(title="Middle-earth MTG Management", version="1.0.0")
