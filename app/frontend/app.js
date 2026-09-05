@@ -443,7 +443,8 @@ async function openCardModal(name) {
       (c.card_faces && c.card_faces[0].image_uris && c.card_faces[0].image_uris.normal);
     if (imgUri) img.src = imgUri;
     nameEl.textContent = c.name || name;
-    typeEl.textContent = [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
+    const flavour = c.flavor_name ? `🗺️ Middle-earth: “${c.flavor_name}”  •  ` : "";
+    typeEl.textContent = flavour + [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
     oracleEl.textContent = c.oracle_text || (c.card_faces ? c.card_faces.map((f) => f.oracle_text).join("\n//\n") : "");
     if (c.scryfall_uri) scry.href = c.scryfall_uri;
     if (c.purchase_uris && c.purchase_uris.cardmarket) cm.href = c.purchase_uris.cardmarket;
