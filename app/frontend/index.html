@@ -15,7 +15,7 @@
       <button data-view="collection">Collection</button>
       <button data-view="sets">Sets</button>
       <button data-view="wishlist">Wishlist</button>
-      <button data-view="deck">Aragorn Deck</button>
+      <button data-view="deck">Decks</button>
       <button data-view="import">Import / Export</button>
     </nav>
   </header>
@@ -90,12 +90,41 @@
 
     <!-- Deck -->
     <section id="view-deck" class="view">
+      <div class="toolbar deck-toolbar">
+        <select id="deck-select"></select>
+        <span id="deck-format-badge" class="pill"></span>
+        <button id="deck-new-btn" class="btn">+ Nuovo mazzo</button>
+        <button id="deck-del-btn" class="btn danger">Elimina mazzo</button>
+      </div>
+      <form id="deck-new-form" class="panel" hidden>
+        <h3>Nuovo mazzo</h3>
+        <div class="toolbar">
+          <input id="deck-new-name" placeholder="Nome mazzo (es. Mordor Aggro)" />
+          <select id="deck-new-format">
+            <option value="standard">Standard — 60 carte (house rules, max 4 copie)</option>
+            <option value="commander">Commander — 100 carte (singleton)</option>
+          </select>
+          <input id="deck-new-colours" placeholder="Colori: es. B, oppure WUBRG (vuoto = tutti)" />
+        </div>
+        <div>
+          <button type="submit" class="primary">Crea</button>
+          <button type="button" id="deck-new-cancel" class="btn">Annulla</button>
+        </div>
+      </form>
       <div class="cards" id="deck-stats"></div>
       <details class="panel" id="deck-import-panel">
         <summary><strong>⬆️ Importa lista mazzo</strong> (incolla la decklist generata dall'AI)</summary>
-        <p class="hint">Una carta per riga, es. <code>1 Aragorn, the Uniter</code> oppure <code>1x Gandalf the Grey</code>. Le carte non presenti in collezione vengono aggiunte come <em>Need</em> (da comprare).</p>
-        <textarea id="deck-import-text" rows="10" placeholder="1 Aragorn, the Uniter&#10;1 Gandalf the Grey&#10;1 Arwen, Mortal Queen&#10;..."></textarea>
-        <label class="hint"><input type="checkbox" id="deck-import-replace" checked /> Sostituisci il mazzo attuale</label>
+        <p class="hint">Una carta per riga, es. <code>1 Aragorn, the Uniter</code> oppure <code>4x Nazgûl</code>. Le carte non presenti in collezione vengono aggiunte come <em>Need</em> (da comprare).</p>
+        <textarea id="deck-import-text" rows="10" placeholder="4 Nazgûl&#10;4 Orcish Bowmasters&#10;2 Sauron, the Dark Lord&#10;..."></textarea>
+        <div class="toolbar">
+          <label class="hint"><input type="checkbox" id="deck-import-replace" checked /> Sostituisci la board selezionata</label>
+          <label class="hint">Board:
+            <select id="deck-import-board">
+              <option value="main">Main</option>
+              <option value="side">Sideboard</option>
+            </select>
+          </label>
+        </div>
         <div>
           <button id="deck-import-btn" class="primary">Importa mazzo</button>
         </div>
@@ -105,7 +134,7 @@
       <div class="table-wrap">
         <table id="deck-table">
           <thead><tr>
-            <th>Name</th><th>Role</th><th>Owned</th><th>Status</th><th>Cmd</th><th></th>
+            <th>Name</th><th>Board</th><th>Qty</th><th>Role</th><th>Owned</th><th>Status</th><th>Cmd</th><th></th>
           </tr></thead>
           <tbody></tbody>
         </table>

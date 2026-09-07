@@ -57,6 +57,7 @@ class WishlistOut(WishlistIn):
 class DeckCardIn(BaseModel):
     card_id: int
     quantity: int = 1
+    board: str = "main"
     role: str = ""
     is_commander: bool = False
     status: str = "Owned"
@@ -69,6 +70,7 @@ class DeckCardOut(BaseModel):
     id: int
     card_id: int
     quantity: int
+    board: str
     role: str
     is_commander: bool
     status: str
@@ -79,3 +81,35 @@ class DeckCardOut(BaseModel):
 class DeckImportIn(BaseModel):
     text: str
     replace: bool = True
+    board: str = "main"
+
+
+class DeckCreateIn(BaseModel):
+    name: str
+    format: str = "standard"  # commander | standard
+    commander_name: str = ""
+    allowed_colours: str = ""  # CSV of WUBRG, empty = any
+    deck_size: int | None = None  # defaults by format
+    max_copies: int | None = None  # defaults by format
+    notes: str = ""
+
+
+class DeckOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    slug: str
+    name: str
+    format: str
+    commander_name: str
+    allowed_colours: str
+    deck_size: int
+    max_copies: int
+    notes: str
+
+
+class DeckSummaryOut(DeckOut):
+    main_count: int = 0
+    side_count: int = 0
+    owned_slots: int = 0
+    need_slots: int = 0

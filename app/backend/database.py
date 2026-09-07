@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Data directory is a Docker volume in production so the SQLite file persists.
@@ -29,3 +29,23 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def run_migrations() -> None:
+    """Lightweight in-place schema migration for the multi-deck upgrade.
+
+    The production SQLite file predates the ``deck_id``/``board`` columns on
+    ``deck_cards``. ``create_all`` never alters existing tables, so add the
+    missing columns here. Back-filling legacy rows into the default deck is done
+    with the ORM in ``ensure_default_decks`` (so column defaults apply).
+    """
+    insp = inspect(engine)
+    if "deck_cards" not in insp.get_table_names():
+        return  # brand-new DB: create_all builds the current schema
+
+    cols = {c["name"] for c in insp.get_columns("deck_cards")}
+    with engine.begin() as conn:
+        if "deck_id" not in cols:
+            conn.execute(text("ALTER TABLE deck_cards ADD COLUMN deck_id INTEGER"))
+        if "board" not in cols:
+            conn.execute(text("ALTER TABLE deck_cards ADD COLUMN board VARCHAR DEFAULT 'main'"))

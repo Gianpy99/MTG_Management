@@ -1,0 +1,35 @@
+# Armies of Mordor — Mono-Black "Amass" midrange (house Standard, 60 cards).
+# All cards are from The Lord of the Rings: Tales of Middle-earth (set ltr).
+# Board markers: lines starting with "## " switch board (main / side).
+
+## main
+# Creatures (24)
+4 Orcish Bowmasters
+4 Nazgûl
+3 Dunland Crebain
+3 Mirkwood Bats
+2 Gothmog, Morgul Lieutenant
+2 Warg Rider
+2 Witch-king of Angmar
+2 Sauron, the Necromancer
+1 Witch-king, Bringer of Ruin
+1 Voracious Fell Beast
+# Spells (12)
+4 Bitter Downfall
+2 Claim the Precious
+2 Lash of the Balrog
+2 Mordor Muster
+2 The One Ring
+# Lands (24)
+21 Swamp
+2 Barad-dûr
+1 Mount Doom
+
+## side
+2 Voracious Fell Beast
+2 Troll of Khazad-dûm
+3 Nasty End
+2 Claim the Precious
+2 Gothmog, Morgul Lieutenant
+2 Witch-king of Angmar
+2 Mordor Muster

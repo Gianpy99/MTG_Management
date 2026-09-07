@@ -232,13 +232,41 @@ document.querySelector("#wish-table tbody").addEventListener("click", async (e) 
 });
 
 // ---------- Deck ----------
+let decksCache = [];
+let currentDeckSlug = null;
+
 async function loadDeck() {
+  decksCache = await api.get("decks");
+  if (!decksCache.length) return;
+  if (!currentDeckSlug || !decksCache.find((d) => d.slug === currentDeckSlug)) {
+    currentDeckSlug = decksCache[0].slug;
+  }
+  const sel = document.getElementById("deck-select");
+  sel.innerHTML = decksCache
+    .map((d) => `<option value="${d.slug}" ${d.slug === currentDeckSlug ? "selected" : ""}>${d.name} · ${d.format}</option>`)
+    .join("");
+  await renderDeck();
+}
+
+async function renderDeck() {
+  const deck = decksCache.find((d) => d.slug === currentDeckSlug);
+  if (!deck) return;
+  const badge = document.getElementById("deck-format-badge");
+  badge.textContent =
+    deck.format === "commander"
+      ? "👑 Commander · singleton · 100"
+      : `⚔️ Standard · min ${deck.deck_size} · max ${deck.max_copies}×`;
+  document.getElementById("deck-del-btn").disabled = deck.slug === "aragorn";
+
   const [cards, val] = await Promise.all([
-    api.get("decks/aragorn"),
-    api.get("decks/aragorn/validation"),
+    api.get(`decks/${currentDeckSlug}/cards`),
+    api.get(`decks/${currentDeckSlug}/validation`),
   ]);
+
+  const mainLabel = val.format === "commander" ? `${val.main_cards}/${val.target}` : `${val.main_cards} (min ${val.target})`;
   document.getElementById("deck-stats").innerHTML = [
-    stat("Slots", `${val.total_cards}/${val.target}`),
+    stat("Main deck", mainLabel),
+    stat("Sideboard", val.side_cards),
     stat("Owned", val.owned_slots),
     stat("To buy", val.need_slots),
     stat("Valid", val.valid ? "✅" : "❌"),
@@ -259,6 +287,8 @@ async function loadDeck() {
           <img class="deck-thumb" data-name="${encodeURIComponent(d.card.card_name)}" alt="" />
           <button class="card-link" data-name="${encodeURIComponent(d.card.card_name)}">${d.card.card_name}</button>
         </td>
+        <td>${d.board === "side" ? '<span class="pill">SB</span>' : "—"}</td>
+        <td>${d.quantity}</td>
         <td>${d.role || ""}</td>
         <td>${d.card.quantity > 0 ? '<span class="pill owned">owned</span>' : '<span class="pill missing">need</span>'}</td>
         <td>${d.status}</td>
@@ -269,6 +299,44 @@ async function loadDeck() {
     .join("");
   setupLazyThumbs("#deck-table");
 }
+
+document.getElementById("deck-select").addEventListener("change", (e) => {
+  currentDeckSlug = e.target.value;
+  renderDeck();
+});
+
+document.getElementById("deck-new-btn").addEventListener("click", () => {
+  document.getElementById("deck-new-form").hidden = false;
+});
+document.getElementById("deck-new-cancel").addEventListener("click", () => {
+  document.getElementById("deck-new-form").hidden = true;
+});
+document.getElementById("deck-new-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("deck-new-name").value.trim();
+  if (!name) return;
+  const format = document.getElementById("deck-new-format").value;
+  const allowed_colours = document.getElementById("deck-new-colours").value.trim().toUpperCase();
+  try {
+    const deck = await api.send("POST", "decks", { name, format, allowed_colours });
+    currentDeckSlug = deck.slug;
+    document.getElementById("deck-new-form").hidden = true;
+    document.getElementById("deck-new-name").value = "";
+    document.getElementById("deck-new-colours").value = "";
+    await loadDeck();
+  } catch (err) {
+    alert("Errore: " + err.message);
+  }
+});
+
+document.getElementById("deck-del-btn").addEventListener("click", async () => {
+  const deck = decksCache.find((d) => d.slug === currentDeckSlug);
+  if (!deck || deck.slug === "aragorn") return;
+  if (!confirm(`Eliminare il mazzo "${deck.name}"? Le carte restano in collezione.`)) return;
+  await api.send("DELETE", `decks/${currentDeckSlug}`);
+  currentDeckSlug = null;
+  await loadDeck();
+});
 
 // Lazy-load Scryfall thumbnails only for rows scrolled into view (avoids
 // hammering the Scryfall API with all cards at once).
@@ -303,21 +371,23 @@ document.querySelector("#deck-table tbody").addEventListener("click", async (e) 
   }
   if (e.target.dataset.act !== "del") return;
   const id = e.target.closest("tr").dataset.id;
-  await api.send("DELETE", `decks/aragorn/cards/${id}`);
-  loadDeck();
+  await api.send("DELETE", `decks/${currentDeckSlug}/cards/${id}`);
+  renderDeck();
 });
 
 // ---------- Deck import (paste decklist) ----------
 document.getElementById("deck-import-btn").addEventListener("click", async () => {
   const text = document.getElementById("deck-import-text").value;
   const replace = document.getElementById("deck-import-replace").checked;
+  const board = document.getElementById("deck-import-board").value;
   const out = document.getElementById("deck-import-result");
+  if (!currentDeckSlug) { out.textContent = "Seleziona o crea prima un mazzo."; return; }
   if (!text.trim()) { out.textContent = "Incolla prima una lista."; return; }
   out.textContent = "Importazione\u2026";
   try {
-    const data = await api.send("POST", "decks/aragorn/import", { text, replace });
+    const data = await api.send("POST", `decks/${currentDeckSlug}/import`, { text, replace, board });
     out.textContent = JSON.stringify(data, null, 2);
-    loadDeck();
+    renderDeck();
   } catch (err) {
     out.textContent = "Errore: " + err.message;
   }

@@ -22,25 +22,26 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
-from database import Base, DB_PATH, engine, get_db
+from database import Base, DB_PATH, engine, get_db, run_migrations
 from importer import import_file
-from models import Card, DeckCard, ImportLog, WishlistItem
+from models import Card, Deck, DeckCard, ImportLog, WishlistItem
 from schemas import (
     CardOut,
     DeckCardIn,
     DeckCardOut,
+    DeckCreateIn,
     DeckImportIn,
+    DeckOut,
+    DeckSummaryOut,
     QuantityUpdate,
     WishlistIn,
     WishlistOut,
 )
-from seed import seed_if_empty
+from seed import ensure_default_decks, seed_if_empty
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
-# Aragorn, the Uniter — {R}{G}{W}{U}: four-colour identity (everything but black).
-COMMANDER_NAME = "Aragorn, the Uniter"
-ALLOWED_COLOUR_IDENTITY = {"W", "U", "R", "G"}
+# Dashboard target for the built-in Aragorn Commander deck.
 DECK_SIZE = 100
 
 app = FastAPI(title="Middle-earth MTG Management", version="1.0.0")
@@ -61,9 +62,11 @@ async def _no_cache(request, call_next):
 @app.on_event("startup")
 def _startup() -> None:
     Base.metadata.create_all(bind=engine)
+    run_migrations()
     db = next(get_db())
     try:
         seed_if_empty(db)
+        ensure_default_decks(db)
     finally:
         db.close()
 
@@ -197,10 +200,17 @@ def collection_summary(db: Session = Depends(get_db)) -> dict:
         or 0
     )
 
-    deck_slots = db.query(func.coalesce(func.sum(DeckCard.quantity), 0)).scalar() or 0
+    aragorn = db.query(Deck).filter(Deck.slug == "aragorn").first()
+    aragorn_id = aragorn.id if aragorn else -1
+    deck_slots = (
+        db.query(func.coalesce(func.sum(DeckCard.quantity), 0))
+        .filter(DeckCard.deck_id == aragorn_id)
+        .scalar()
+        or 0
+    )
     deck_need = (
         db.query(func.coalesce(func.sum(DeckCard.quantity), 0))
-        .filter(DeckCard.status == "Need")
+        .filter(DeckCard.deck_id == aragorn_id, DeckCard.status == "Need")
         .scalar()
         or 0
     )
@@ -271,23 +281,125 @@ def delete_wishlist(item_id: int, db: Session = Depends(get_db)) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# Aragorn Commander deck
+# Decks (Commander + Standard house decks)
 # --------------------------------------------------------------------------- #
-@app.get("/api/decks/aragorn", response_model=list[DeckCardOut])
-def list_deck(db: Session = Depends(get_db)) -> list[DeckCard]:
-    return db.query(DeckCard).join(Card).order_by(DeckCard.is_commander.desc(), Card.card_name).all()
+FORMAT_DEFAULTS: dict[str, dict[str, int]] = {
+    "commander": {"deck_size": 100, "max_copies": 1},
+    "standard": {"deck_size": 60, "max_copies": 4},
+}
+SIDEBOARD_MAX = 15
+
+BASIC_LANDS = {
+    "plains", "island", "swamp", "mountain", "forest", "wastes",
+    "snow-covered plains", "snow-covered island", "snow-covered swamp",
+    "snow-covered mountain", "snow-covered forest",
+}
 
 
-@app.post("/api/decks/aragorn/cards", response_model=DeckCardOut)
-def add_deck_card(payload: DeckCardIn, db: Session = Depends(get_db)) -> DeckCard:
+def _slugify(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-") or "deck"
+
+
+def _unique_slug(db: Session, name: str) -> str:
+    base = _slugify(name)
+    candidate = base
+    i = 2
+    while db.query(Deck).filter(Deck.slug == candidate).first() is not None:
+        candidate = f"{base}-{i}"
+        i += 1
+    return candidate
+
+
+def _get_deck(db: Session, slug: str) -> Deck:
+    deck = db.query(Deck).filter(Deck.slug == slug).first()
+    if deck is None:
+        raise HTTPException(status_code=404, detail="Deck not found")
+    return deck
+
+
+def _with_summary(deck: Deck) -> Deck:
+    """Attach main/side/owned counts as plain attributes for DeckSummaryOut."""
+    main = side = owned = 0
+    for s in deck.deck_cards:
+        if s.board == "side":
+            side += s.quantity
+        else:
+            main += s.quantity
+        if s.card is not None and s.card.quantity >= s.quantity:
+            owned += s.quantity
+    deck.main_count = main
+    deck.side_count = side
+    deck.owned_slots = owned
+    deck.need_slots = (main + side) - owned
+    return deck
+
+
+@app.get("/api/decks", response_model=list[DeckSummaryOut])
+def list_decks(db: Session = Depends(get_db)) -> list[Deck]:
+    decks = db.query(Deck).order_by(Deck.created_at).all()
+    return [_with_summary(d) for d in decks]
+
+
+@app.post("/api/decks", response_model=DeckOut)
+def create_deck(payload: DeckCreateIn, db: Session = Depends(get_db)) -> Deck:
+    fmt = payload.format if payload.format in FORMAT_DEFAULTS else "standard"
+    defaults = FORMAT_DEFAULTS[fmt]
+    deck = Deck(
+        slug=_unique_slug(db, payload.name),
+        name=payload.name.strip() or "Untitled deck",
+        format=fmt,
+        commander_name=payload.commander_name.strip(),
+        allowed_colours=payload.allowed_colours.strip().upper(),
+        deck_size=payload.deck_size or defaults["deck_size"],
+        max_copies=payload.max_copies or defaults["max_copies"],
+        notes=payload.notes,
+    )
+    db.add(deck)
+    db.commit()
+    db.refresh(deck)
+    return deck
+
+
+@app.delete("/api/decks/{slug}")
+def delete_deck(slug: str, db: Session = Depends(get_db)) -> dict:
+    if slug == "aragorn":
+        raise HTTPException(status_code=400, detail="The built-in Aragorn deck cannot be deleted.")
+    deck = _get_deck(db, slug)
+    db.delete(deck)
+    db.commit()
+    return {"deleted": slug}
+
+
+@app.get("/api/decks/{slug}/cards", response_model=list[DeckCardOut])
+def list_deck(slug: str, db: Session = Depends(get_db)) -> list[DeckCard]:
+    deck = _get_deck(db, slug)
+    return (
+        db.query(DeckCard)
+        .join(Card)
+        .filter(DeckCard.deck_id == deck.id)
+        .order_by(DeckCard.is_commander.desc(), DeckCard.board, Card.card_name)
+        .all()
+    )
+
+
+@app.post("/api/decks/{slug}/cards", response_model=DeckCardOut)
+def add_deck_card(slug: str, payload: DeckCardIn, db: Session = Depends(get_db)) -> DeckCard:
+    deck = _get_deck(db, slug)
     card = db.get(Card, payload.card_id)
     if card is None:
         raise HTTPException(status_code=404, detail="Card not found")
-    existing = db.query(DeckCard).filter(DeckCard.card_id == payload.card_id).one_or_none()
+    existing = (
+        db.query(DeckCard)
+        .filter(
+            DeckCard.deck_id == deck.id,
+            DeckCard.card_id == payload.card_id,
+            DeckCard.board == payload.board,
+        )
+        .one_or_none()
+    )
     if existing:
-        raise HTTPException(status_code=409, detail="Card already in deck (singleton)")
-    slot = DeckCard(**payload.model_dump())
-    # Auto owned/need status from current collection.
+        raise HTTPException(status_code=409, detail="Card already in this board.")
+    slot = DeckCard(deck_id=deck.id, **payload.model_dump())
     if not payload.status or payload.status == "Owned":
         slot.status = "Owned" if card.quantity >= payload.quantity else "Need"
     db.add(slot)
@@ -296,10 +408,11 @@ def add_deck_card(payload: DeckCardIn, db: Session = Depends(get_db)) -> DeckCar
     return slot
 
 
-@app.patch("/api/decks/aragorn/cards/{slot_id}", response_model=DeckCardOut)
-def update_deck_card(slot_id: int, payload: DeckCardIn, db: Session = Depends(get_db)) -> DeckCard:
+@app.patch("/api/decks/{slug}/cards/{slot_id}", response_model=DeckCardOut)
+def update_deck_card(slug: str, slot_id: int, payload: DeckCardIn, db: Session = Depends(get_db)) -> DeckCard:
+    deck = _get_deck(db, slug)
     slot = db.get(DeckCard, slot_id)
-    if slot is None:
+    if slot is None or slot.deck_id != deck.id:
         raise HTTPException(status_code=404, detail="Deck slot not found")
     for key, value in payload.model_dump().items():
         setattr(slot, key, value)
@@ -308,10 +421,11 @@ def update_deck_card(slot_id: int, payload: DeckCardIn, db: Session = Depends(ge
     return slot
 
 
-@app.delete("/api/decks/aragorn/cards/{slot_id}")
-def delete_deck_card(slot_id: int, db: Session = Depends(get_db)) -> dict:
+@app.delete("/api/decks/{slug}/cards/{slot_id}")
+def delete_deck_card(slug: str, slot_id: int, db: Session = Depends(get_db)) -> dict:
+    deck = _get_deck(db, slug)
     slot = db.get(DeckCard, slot_id)
-    if slot is None:
+    if slot is None or slot.deck_id != deck.id:
         raise HTTPException(status_code=404, detail="Deck slot not found")
     db.delete(slot)
     db.commit()
@@ -320,11 +434,6 @@ def delete_deck_card(slot_id: int, db: Session = Depends(get_db)) -> dict:
 
 _DECK_LINE = re.compile(r"^\s*(?:(\d+)\s*[xX]?\s+)?(.+?)\s*$")
 _SKIP_PREFIXES = ("//", "#", "deck", "commander:", "sideboard", "sb:", "maybeboard", "about")
-BASIC_LANDS = {
-    "plains", "island", "swamp", "mountain", "forest", "wastes",
-    "snow-covered plains", "snow-covered island", "snow-covered swamp",
-    "snow-covered mountain", "snow-covered forest",
-}
 
 
 def _parse_decklist(text: str) -> list[tuple[int, str]]:
@@ -354,14 +463,18 @@ def _parse_decklist(text: str) -> list[tuple[int, str]]:
     return out
 
 
-@app.post("/api/decks/aragorn/import")
-def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
+@app.post("/api/decks/{slug}/import")
+def import_deck(slug: str, payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
+    deck = _get_deck(db, slug)
+    board = "side" if payload.board == "side" else "main"
     parsed = _parse_decklist(payload.text)
     if not parsed:
         raise HTTPException(status_code=400, detail="No card lines found in decklist")
 
     if payload.replace:
-        db.query(DeckCard).delete()
+        db.query(DeckCard).filter(
+            DeckCard.deck_id == deck.id, DeckCard.board == board
+        ).delete()
         db.flush()
 
     # Preload the catalogue indexed by a Python-normalised name. SQLite's lower()
@@ -402,11 +515,18 @@ def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
         else:
             matched += 1
 
-        is_cmd = norm == COMMANDER_NAME.lower()
+        is_cmd = (
+            deck.format == "commander"
+            and board == "main"
+            and bool(deck.commander_name)
+            and norm == deck.commander_name.strip().lower()
+        )
         db.add(
             DeckCard(
+                deck_id=deck.id,
                 card_id=card.id,
                 quantity=qty,
+                board=board,
                 is_commander=is_cmd,
                 role="Commander" if is_cmd else "",
                 status="Owned" if card.quantity >= qty else "Need",
@@ -421,6 +541,7 @@ def import_deck(payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
         "matched_in_collection": matched,
         "created_as_need": created,
         "replaced": payload.replace,
+        "board": board,
     }
 
 
@@ -613,46 +734,62 @@ def _colour_identity(card: Card) -> set[str]:
     return letters
 
 
-@app.get("/api/decks/aragorn/validation")
-def validate_deck(db: Session = Depends(get_db)) -> dict:
-    slots = db.query(DeckCard).join(Card).all()
+@app.get("/api/decks/{slug}/validation")
+def validate_deck(slug: str, db: Session = Depends(get_db)) -> dict:
+    deck = _get_deck(db, slug)
+    slots = db.query(DeckCard).join(Card).filter(DeckCard.deck_id == deck.id).all()
     errors: list[str] = []
     warnings: list[str] = []
 
-    total = sum(s.quantity for s in slots)
-    if total != DECK_SIZE:
-        errors.append(f"Deck has {total} cards, must be exactly {DECK_SIZE} (including commander).")
+    main_slots = [s for s in slots if s.board != "side"]
+    side_slots = [s for s in slots if s.board == "side"]
+    main_total = sum(s.quantity for s in main_slots)
+    side_total = sum(s.quantity for s in side_slots)
+    allowed = set(re.findall(r"[WUBRG]", (deck.allowed_colours or "").upper()))
 
-    commanders = [s for s in slots if s.is_commander]
-    if len(commanders) == 0:
-        errors.append("No commander set. Mark Aragorn, the Uniter as commander.")
-    elif len(commanders) > 1:
-        errors.append("More than one commander marked.")
+    if deck.format == "commander":
+        if main_total != deck.deck_size:
+            errors.append(
+                f"Deck has {main_total} cards, must be exactly {deck.deck_size} (including commander)."
+            )
+        commanders = [s for s in main_slots if s.is_commander]
+        if len(commanders) == 0:
+            errors.append(f"No commander set. Mark {deck.commander_name or 'the commander'} as commander.")
+        elif len(commanders) > 1:
+            errors.append("More than one commander marked.")
+        if side_total:
+            warnings.append("Commander decks have no sideboard; side cards are ignored.")
+    else:  # standard house format
+        if main_total < deck.deck_size:
+            errors.append(f"Main deck has {main_total} cards, minimum is {deck.deck_size}.")
+        if side_total > SIDEBOARD_MAX:
+            errors.append(f"Sideboard has {side_total} cards, maximum is {SIDEBOARD_MAX}.")
 
-    # Singleton (non-basic lands): each card_id appears once.
+    # Copy-count limit (main + side combined). Basics and "any number" cards exempt.
     seen: dict[int, int] = {}
     for s in slots:
         seen[s.card_id] = seen.get(s.card_id, 0) + s.quantity
     for card_id, qty in seen.items():
         card = db.get(Card, card_id)
         name_l = (card.card_name or "").strip().lower() if card else ""
-        is_basic = card and (
-            "basic" in (card.card_type or "").lower() or name_l in BASIC_LANDS
-        )
-        if qty > 1 and not is_basic:
-            errors.append(f"Singleton violation: {card.card_name if card else card_id} x{qty}.")
+        is_basic = card and ("basic" in (card.card_type or "").lower() or name_l in BASIC_LANDS)
+        # Cards with a deck-construction clause (e.g. "up to nine cards named
+        # Nazgûl") are exempt from the per-card copy cap once enriched.
+        any_number = card and "cards named" in (card.oracle_text or "").lower()
+        if qty > deck.max_copies and not is_basic and not any_number:
+            label = "Singleton violation" if deck.max_copies == 1 else f"Over {deck.max_copies}-copy limit"
+            errors.append(f"{label}: {card.card_name if card else card_id} x{qty}.")
 
     # Colour identity + project set restriction + owned check.
     for s in slots:
         card = s.card
-        outside = _colour_identity(card) - ALLOWED_COLOUR_IDENTITY
-        if outside:
-            warnings.append(
-                f"{card.card_name}: colour identity {sorted(outside)} outside Bant (W/U/G)."
-            )
+        if allowed:
+            outside = _colour_identity(card) - allowed
+            if outside:
+                warnings.append(
+                    f"{card.card_name}: colour {sorted(outside)} outside {sorted(allowed)}."
+                )
         setn = (card.set_name or "").strip().lower()
-        # Only warn when the set is KNOWN and clearly outside the Middle-earth
-        # project scope. Uncatalogued (Unknown) cards and basic lands are exempt.
         name_l = (card.card_name or "").strip().lower()
         in_scope = (
             setn in ("", "unknown")
@@ -667,11 +804,16 @@ def validate_deck(db: Session = Depends(get_db)) -> dict:
         if card.quantity < s.quantity and s.status != "Need":
             warnings.append(f"{card.card_name}: marked {s.status} but only {card.quantity} owned.")
 
+    total = main_total + side_total
     owned_slots = sum(s.quantity for s in slots if s.card.quantity >= s.quantity)
     return {
         "valid": len(errors) == 0,
+        "format": deck.format,
         "total_cards": total,
-        "target": DECK_SIZE,
+        "main_cards": main_total,
+        "side_cards": side_total,
+        "target": deck.deck_size,
+        "max_copies": deck.max_copies,
         "owned_slots": owned_slots,
         "need_slots": total - owned_slots,
         "errors": errors,

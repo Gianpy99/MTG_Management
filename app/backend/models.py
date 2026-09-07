@@ -66,6 +66,31 @@ class Card(Base):
     )
 
 
+class Deck(Base):
+    """A deck (Commander or a 60-card constructed 'Standard' house deck).
+
+    ``format`` drives validation rules; ``allowed_colours`` (CSV of WUBRG,
+    empty = any) and ``commander_name`` are format-specific extras.
+    """
+
+    __tablename__ = "decks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String)
+    format: Mapped[str] = mapped_column(String, default="commander")  # commander | standard
+    commander_name: Mapped[str] = mapped_column(String, default="")
+    allowed_colours: Mapped[str] = mapped_column(String, default="")  # CSV of WUBRG, empty = any
+    deck_size: Mapped[int] = mapped_column(Integer, default=100)  # exact (commander) or minimum (standard)
+    max_copies: Mapped[int] = mapped_column(Integer, default=1)  # non-basic copy cap
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    notes: Mapped[str] = mapped_column(Text, default="")
+
+    deck_cards: Mapped[list["DeckCard"]] = relationship(
+        back_populates="deck", cascade="all, delete-orphan"
+    )
+
+
 class WishlistItem(Base):
     __tablename__ = "wishlist"
 
@@ -82,18 +107,21 @@ class WishlistItem(Base):
 
 
 class DeckCard(Base):
-    """A slot in the single Aragorn Commander deck."""
+    """A slot in a deck (main board or sideboard)."""
 
     __tablename__ = "deck_cards"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    deck_id: Mapped[int] = mapped_column(ForeignKey("decks.id", ondelete="CASCADE"), index=True)
     card_id: Mapped[int] = mapped_column(ForeignKey("cards.id", ondelete="CASCADE"), index=True)
     quantity: Mapped[int] = mapped_column(Integer, default=1)
+    board: Mapped[str] = mapped_column(String, default="main")  # main | side
     role: Mapped[str] = mapped_column(String, default="")  # Ramp, Draw, Removal, ...
     is_commander: Mapped[bool] = mapped_column(Boolean, default=False)
     status: Mapped[str] = mapped_column(String, default="Owned")  # Owned | Need | Maybe
     notes: Mapped[str] = mapped_column(Text, default="")
 
+    deck: Mapped["Deck"] = relationship(back_populates="deck_cards")
     card: Mapped[Card] = relationship(back_populates="deck_cards")
 
 
