@@ -15,6 +15,7 @@ from models import Card, Deck, DeckCard
 SEED_CSV = Path(__file__).resolve().parent / "seed" / "collection_seed.csv"
 MORDOR_DECKLIST = Path(__file__).resolve().parent / "seed" / "armies_of_mordor.txt"
 SAURON_DECKLIST = Path(__file__).resolve().parent / "seed" / "sauron_dark_lord.txt"
+FELLOWSHIP_DECKLIST = Path(__file__).resolve().parent / "seed" / "fellowship_free_peoples.txt"
 BASIC_LANDS = {"plains", "island", "swamp", "mountain", "forest", "wastes"}
 
 
@@ -65,6 +66,7 @@ def ensure_default_decks(db: Session) -> None:
 
     _seed_mordor_standard(db)
     _seed_sauron_commander(db)
+    _seed_fellowship_commander(db)
 
 
 def _seed_mordor_standard(db: Session) -> None:
@@ -94,6 +96,21 @@ def _seed_sauron_commander(db: Session) -> None:
         notes="Grixis Amass/army control. Middle-earth only (LTR + LTR Commander).",
         commander_name="Sauron, the Dark Lord",
         path=SAURON_DECKLIST,
+    )
+
+
+def _seed_fellowship_commander(db: Session) -> None:
+    _seed_builtin_deck(
+        db,
+        slug="free-peoples",
+        name="The Fellowship of the Free Peoples",
+        fmt="commander",
+        colours="G,W",
+        deck_size=100,
+        max_copies=1,
+        notes="Selesnya Food/lifegain go-wide with a legendary hero army. Middle-earth only.",
+        commander_name="Samwise Gamgee",
+        path=FELLOWSHIP_DECKLIST,
     )
 
 
