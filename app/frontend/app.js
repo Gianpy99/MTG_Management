@@ -30,7 +30,7 @@ navButtons.forEach((b) =>
 function switchView(name) {
   navButtons.forEach((b) => b.classList.toggle("active", b.dataset.view === name));
   views.forEach((v) => v.classList.toggle("active", v.id === "view-" + name));
-  const loaders = { dashboard: loadDashboard, collection: loadCollection, sets: loadSets, wishlist: loadWishlist, deck: loadDeck };
+  const loaders = { dashboard: loadDashboard, collection: loadCollection, stats: loadStats, sets: loadSets, wishlist: loadWishlist, deck: loadDeck };
   (loaders[name] || (() => {}))();
 }
 
@@ -184,6 +184,78 @@ document.querySelector("#col-table tbody").addEventListener("change", async (e) 
   const el = document.getElementById(id);
   el.addEventListener(el.tagName === "INPUT" ? "input" : "change", debounce(refreshCollection, 250));
 });
+
+// ---------- Stats ----------
+// Colour palettes for pie segments (keyed by category value).
+const STAT_COLOURS = {
+  owned: { Owned: "#3f9d5a", Missing: "#8a3b34" },
+  rarity: { C: "#9aa0a6", U: "#c0c7ce", R: "#d9b34a", M: "#e06a2c", S: "#8e7cc3", "—": "#5a5f66" },
+  colour: { W: "#f5e7c4", U: "#3b82d6", B: "#5a5560", R: "#d0433a", G: "#3f9d5a", Multicolour: "#d9b34a", Colourless: "#9aa0a6", "—": "#5a5f66" },
+  type: { Creature: "#3f9d5a", Instant: "#3b82d6", Sorcery: "#d0433a", Enchantment: "#c9a227", Artifact: "#9aa0a6", Planeswalker: "#e06a2c", Land: "#8a6d3b", Battle: "#b5533c", Other: "#5a5f66" },
+  edition: { ltr: "#d9b34a", ltc: "#c98a2c", hob: "#3f9d5a", hoc: "#2f7d46", "—": "#5a5f66" },
+  set: { "The Lord of the Rings": "#d9b34a", "The Hobbit": "#3f9d5a", "—": "#5a5f66" },
+};
+const PALETTE = ["#d9b34a", "#3f9d5a", "#3b82d6", "#d0433a", "#e06a2c", "#8e7cc3", "#9aa0a6", "#2f7d46", "#c98a2c", "#5a5f66"];
+const EDITION_FULL = { ltr: "LOTR", ltc: "LOTR Commander", hob: "Hobbit", hoc: "Hobbit Eternal" };
+
+function colourFor(cat, key, i) {
+  return (STAT_COLOURS[cat] && STAT_COLOURS[cat][key]) || PALETTE[i % PALETTE.length];
+}
+
+// A single conic-gradient pie with a legend (value + %).
+function pie(cat, title, obj) {
+  const entries = Object.entries(obj).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  if (!total) return `<div class="pie-card"><h4>${title}</h4><p class="hint">—</p></div>`;
+  let acc = 0;
+  const segs = entries.map(([k, v], i) => {
+    const start = (acc / total) * 360;
+    acc += v;
+    const end = (acc / total) * 360;
+    return `${colourFor(cat, k, i)} ${start}deg ${end}deg`;
+  });
+  const legend = entries
+    .map(([k, v], i) => {
+      const label = cat === "edition" ? (EDITION_FULL[k] || k) : k;
+      const pct = Math.round((v / total) * 100);
+      return `<li><span class="dot" style="background:${colourFor(cat, k, i)}"></span>${label} <b>${v}</b> <span class="hint">(${pct}%)</span></li>`;
+    })
+    .join("");
+  return `<div class="pie-card">
+    <h4>${title} <span class="hint">· ${total}</span></h4>
+    <div class="pie" style="background:conic-gradient(${segs.join(",")})"></div>
+    <ul class="pie-legend">${legend}</ul>
+  </div>`;
+}
+
+// Owned vs total pair of pies for one dimension.
+function pieGroup(cat, heading, block) {
+  return `<div class="panel">
+    <h3>${heading}</h3>
+    <div class="pie-row">
+      ${pie(cat, "Owned", block.owned)}
+      ${pie(cat, "In collection", block.total)}
+    </div>
+  </div>`;
+}
+
+async function loadStats() {
+  const s = await api.get("stats");
+  document.getElementById("stats-headline").innerHTML = [
+    stat("Owned (unique)", `${s.unique_owned}/${s.unique_total}`, `${s.completion}% del catalogo`, s.completion),
+    stat("Total copies", s.total_copies, "physical cards"),
+    stat("Missing (unique)", s.unique_missing, "catalogued not owned"),
+    stat("Mythics owned", `${(s.by_rarity.owned.M || 0)}/${(s.by_rarity.total.M || 0)}`, "rare mitiche"),
+  ].join("");
+  document.getElementById("stats-charts").innerHTML = [
+    `<div class="panel"><h3>Owned vs Missing</h3><div class="pie-row">${pie("owned", "Unique cards", { Owned: s.unique_owned, Missing: s.unique_missing })}</div></div>`,
+    pieGroup("rarity", "By rarity", s.by_rarity),
+    pieGroup("colour", "By colour", s.by_colour),
+    pieGroup("type", "By type", s.by_type),
+    pieGroup("edition", "By edition", s.by_edition),
+    pieGroup("set", "By set", s.by_set),
+  ].join("");
+}
 
 // ---------- Sets ----------
 async function loadSets() {

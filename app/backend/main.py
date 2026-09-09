@@ -248,6 +248,57 @@ def collection_summary(db: Session = Depends(get_db)) -> dict:
     }
 
 
+def _primary_type(card_type: str) -> str:
+    """Reduce a full type line to a single primary type bucket for charts."""
+    head = (card_type or "").split("—")[0].strip()
+    for t in ("Creature", "Planeswalker", "Battle", "Land", "Artifact",
+              "Enchantment", "Instant", "Sorcery"):
+        if t.lower() in head.lower():
+            return t
+    return head or "Other"
+
+
+def _colour_bucket(colour: str) -> str:
+    c = (colour or "").strip()
+    if c in ("", "C", "Colourless", "Colorless"):
+        return "Colourless"
+    return c
+
+
+@app.get("/api/stats")
+def collection_stats(db: Session = Depends(get_db)) -> dict:
+    """Aggregated distributions (owned vs whole collection) for the charts view."""
+    cards = db.query(Card).all()
+
+    def dist(key_fn) -> dict:
+        total: dict[str, int] = {}
+        owned: dict[str, int] = {}
+        for c in cards:
+            k = key_fn(c)
+            total[k] = total.get(k, 0) + 1
+            if c.quantity > 0:
+                owned[k] = owned.get(k, 0) + 1
+        return {"total": total, "owned": owned}
+
+    unique_total = len(cards)
+    unique_owned = sum(1 for c in cards if c.quantity > 0)
+    copies = sum(c.quantity for c in cards)
+
+    return {
+        "unique_total": unique_total,
+        "unique_owned": unique_owned,
+        "unique_missing": unique_total - unique_owned,
+        "total_copies": int(copies),
+        "completion": round(unique_owned / unique_total * 100, 1) if unique_total else 0.0,
+        "by_rarity": dist(lambda c: c.rarity or "—"),
+        "by_colour": dist(lambda c: _colour_bucket(c.colour)),
+        "by_type": dist(lambda c: _primary_type(c.card_type)),
+        "by_edition": dist(lambda c: c.edition or "—"),
+        "by_set": dist(lambda c: c.set_name or "—"),
+    }
+
+
+
 # --------------------------------------------------------------------------- #
 # Wishlist
 # --------------------------------------------------------------------------- #
