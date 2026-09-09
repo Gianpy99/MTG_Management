@@ -211,17 +211,11 @@ def collection_summary(db: Session = Depends(get_db)) -> dict:
 
     aragorn = db.query(Deck).filter(Deck.slug == "aragorn").first()
     aragorn_id = aragorn.id if aragorn else -1
-    deck_slots = (
-        db.query(func.coalesce(func.sum(DeckCard.quantity), 0))
-        .filter(DeckCard.deck_id == aragorn_id)
-        .scalar()
-        or 0
-    )
-    deck_need = (
-        db.query(func.coalesce(func.sum(DeckCard.quantity), 0))
-        .filter(DeckCard.deck_id == aragorn_id, DeckCard.status == "Need")
-        .scalar()
-        or 0
+    aragorn_slots = db.query(DeckCard).filter(DeckCard.deck_id == aragorn_id).all()
+    deck_slots = sum(s.quantity for s in aragorn_slots)
+    # Live "still to buy": slots whose linked card isn't owned in enough copies.
+    deck_need = sum(
+        s.quantity for s in aragorn_slots if s.card is None or s.card.quantity < s.quantity
     )
     wishlist_value = (
         db.query(func.coalesce(func.sum(WishlistItem.target_price), 0.0))
@@ -861,8 +855,6 @@ def validate_deck(slug: str, db: Session = Depends(get_db)) -> dict:
         )
         if not in_scope:
             warnings.append(f"{card.card_name}: outside project set scope ({card.set_name}).")
-        if card.quantity < s.quantity and s.status != "Need":
-            warnings.append(f"{card.card_name}: marked {s.status} but only {card.quantity} owned.")
 
     total = main_total + side_total
     owned_slots = sum(s.quantity for s in slots if s.card.quantity >= s.quantity)

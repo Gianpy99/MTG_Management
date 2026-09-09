@@ -131,7 +131,6 @@ function renderCollection() {
         <td>${c.collector_number}</td>
         <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
-        <td>${c.aragorn_synergy || ""}</td>
         <td><div class="qty">
           <button data-act="dec">−</button>
           <input type="number" min="0" value="${c.quantity}" />
@@ -371,8 +370,9 @@ async function renderDeck() {
         <td>${d.board === "side" ? '<span class="pill">SB</span>' : "—"}</td>
         <td>${d.quantity}</td>
         <td>${d.role || ""}</td>
-        <td>${d.card.quantity > 0 ? '<span class="pill owned">owned</span>' : '<span class="pill missing">need</span>'}</td>
-        <td>${d.status}</td>
+        <td>${d.card.quantity >= d.quantity
+          ? `<span class="pill owned">owned</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`
+          : `<span class="pill missing">need</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`}</td>
         <td>${d.is_commander ? "👑" : ""}</td>
         <td><button class="link danger" data-act="del">remove</button></td>
       </tr>`
