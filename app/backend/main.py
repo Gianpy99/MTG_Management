@@ -501,6 +501,8 @@ def _parse_decklist(text: str) -> list[tuple[int, str]]:
         line = raw.strip()
         if not line:
             continue
+        if line.startswith("#"):
+            continue
         low = line.lower()
         m = _DECK_LINE.match(line)
         if not m:
