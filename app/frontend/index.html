@@ -35,6 +35,13 @@
       <div class="toolbar">
         <input id="col-search" type="search" placeholder="Search name or oracle text…" />
         <select id="col-set"><option value="">All sets</option></select>
+        <select id="col-edition">
+          <option value="">All editions</option>
+          <option value="ltr">LOTR</option>
+          <option value="ltc">LOTR Commander</option>
+          <option value="hob">Hobbit</option>
+          <option value="hoc">Hobbit Eternal</option>
+        </select>
         <select id="col-owned">
           <option value="">Owned + Missing</option>
           <option value="true">Owned</option>
@@ -47,11 +54,33 @@
           <option value="R">Rare</option>
           <option value="M">Mythic</option>
         </select>
+        <select id="col-colour">
+          <option value="">All colours</option>
+          <option value="W">White</option>
+          <option value="U">Blue</option>
+          <option value="B">Black</option>
+          <option value="R">Red</option>
+          <option value="G">Green</option>
+          <option value="Multicolour">Multicolour</option>
+          <option value="C">Colourless</option>
+        </select>
+        <select id="col-type">
+          <option value="">All types</option>
+          <option value="Creature">Creature</option>
+          <option value="Instant">Instant</option>
+          <option value="Sorcery">Sorcery</option>
+          <option value="Enchantment">Enchantment</option>
+          <option value="Artifact">Artifact</option>
+          <option value="Planeswalker">Planeswalker</option>
+          <option value="Battle">Battle</option>
+          <option value="Land">Land</option>
+        </select>
       </div>
       <div class="table-wrap">
         <table id="col-table">
           <thead><tr>
             <th class="sortable" data-sort="set_name">Set</th>
+            <th class="sortable" data-sort="edition">Ed.</th>
             <th class="sortable" data-sort="collector_number">#</th>
             <th class="sortable" data-sort="card_name">Name</th>
             <th class="sortable" data-sort="rarity">Rarity</th>

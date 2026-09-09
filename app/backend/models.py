@@ -36,6 +36,7 @@ class Card(Base):
     set_name: Mapped[str] = mapped_column(String, index=True)
     card_name: Mapped[str] = mapped_column(String, index=True)
     collector_number: Mapped[str] = mapped_column(String, default="")
+    edition: Mapped[str] = mapped_column(String, default="", index=True)  # Scryfall set code: ltr/ltc/hob/hoc
     rarity: Mapped[str] = mapped_column(String, default="")
     colour: Mapped[str] = mapped_column(String, default="")
     mana_cost: Mapped[str] = mapped_column(String, default="")

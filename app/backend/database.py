@@ -49,3 +49,9 @@ def run_migrations() -> None:
             conn.execute(text("ALTER TABLE deck_cards ADD COLUMN deck_id INTEGER"))
         if "board" not in cols:
             conn.execute(text("ALTER TABLE deck_cards ADD COLUMN board VARCHAR DEFAULT 'main'"))
+
+    if "cards" in insp.get_table_names():
+        card_cols = {c["name"] for c in insp.get_columns("cards")}
+        with engine.begin() as conn:
+            if "edition" not in card_cols:
+                conn.execute(text("ALTER TABLE cards ADD COLUMN edition VARCHAR DEFAULT ''"))

@@ -11,6 +11,7 @@ class CardOut(BaseModel):
     set_name: str
     card_name: str
     collector_number: str
+    edition: str = ""
     rarity: str
     colour: str
     mana_cost: str

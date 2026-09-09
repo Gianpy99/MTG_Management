@@ -143,6 +143,9 @@ def list_cards(
     owned: bool | None = None,
     q: str | None = None,
     rarity: str | None = None,
+    colour: str | None = None,
+    card_type: str | None = None,
+    edition: str | None = None,
     db: Session = Depends(get_db),
 ) -> list[Card]:
     query = db.query(Card)
@@ -154,6 +157,12 @@ def list_cards(
         query = query.filter(Card.quantity == 0)
     if rarity:
         query = query.filter(Card.rarity == rarity)
+    if colour:
+        query = query.filter(Card.colour == colour)
+    if card_type:
+        query = query.filter(Card.card_type.ilike(f"%{card_type}%"))
+    if edition:
+        query = query.filter(Card.edition == edition)
     if q:
         like = f"%{q}%"
         query = query.filter(Card.card_name.ilike(like) | Card.oracle_text.ilike(like))

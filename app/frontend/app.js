@@ -80,16 +80,23 @@ async function refreshCollection() {
   const set = document.getElementById("col-set").value;
   const owned = document.getElementById("col-owned").value;
   const rarity = document.getElementById("col-rarity").value;
+  const colour = document.getElementById("col-colour").value;
+  const cardType = document.getElementById("col-type").value;
+  const edition = document.getElementById("col-edition").value;
   const params = new URLSearchParams();
   if (q) params.set("q", q);
   if (set) params.set("set", set);
   if (owned) params.set("owned", owned);
   if (rarity) params.set("rarity", rarity);
+  if (colour) params.set("colour", colour);
+  if (cardType) params.set("card_type", cardType);
+  if (edition) params.set("edition", edition);
   colCards = await api.get("cards?" + params.toString());
   renderCollection();
 }
 
-// Column sorting (client-side, number-aware for collector number).
+// Client-side sorting + display helpers.
+const EDITION_LABEL = { ltr: "LOTR", ltc: "LOTR Cmd", hob: "Hobbit", hoc: "Hobbit Etl" };
 let colCards = [];
 let colSort = { key: "collector_number", dir: 1 };
 const RARITY_ORDER = { C: 0, Common: 0, U: 1, Uncommon: 1, R: 2, Rare: 2, M: 3, Mythic: 3 };
@@ -119,7 +126,9 @@ function renderCollection() {
   tbody.innerHTML = sorted
     .map(
       (c) => `<tr data-id="${c.id}">
-        <td>${c.set_name}</td><td>${c.collector_number}</td>
+        <td>${c.set_name}</td>
+        <td><span class="ed-badge">${EDITION_LABEL[c.edition] || c.edition || "—"}</span></td>
+        <td>${c.collector_number}</td>
         <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
         <td>${c.aragorn_synergy || ""}</td>
@@ -171,7 +180,7 @@ document.querySelector("#col-table tbody").addEventListener("change", async (e) 
   await api.send("PATCH", `collection/${id}`, { quantity: Math.max(0, +e.target.value) });
 });
 
-["col-search", "col-set", "col-owned", "col-rarity"].forEach((id) => {
+["col-search", "col-set", "col-owned", "col-rarity", "col-colour", "col-type", "col-edition"].forEach((id) => {
   const el = document.getElementById(id);
   el.addEventListener(el.tagName === "INPUT" ? "input" : "change", debounce(refreshCollection, 250));
 });
