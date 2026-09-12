@@ -165,6 +165,40 @@
         </div>
         <pre id="deck-import-result"></pre>
       </details>
+      <details class="panel" id="deck-export-panel">
+        <summary><strong>⬇️ Esporta lista</strong> (per altre chat AI o per comprare su Cardmarket)</summary>
+        <p class="hint">Esporta il mazzo come testo da incollare in altre chat AI, oppure la lista delle <em>carte mancanti</em> da importare su Cardmarket per creare la lista d'acquisto.</p>
+        <div class="toolbar">
+          <label class="hint">Cosa:
+            <select id="deck-export-scope">
+              <option value="all">Tutto il mazzo</option>
+              <option value="missing">Solo da comprare (mancanti)</option>
+              <option value="owned">Solo possedute</option>
+            </select>
+          </label>
+          <label class="hint">Board:
+            <select id="deck-export-board">
+              <option value="all">Tutte</option>
+              <option value="main">Main</option>
+              <option value="side">Sideboard</option>
+            </select>
+          </label>
+          <label class="hint">Formato:
+            <select id="deck-export-format">
+              <option value="text">Testo (AI / decklist)</option>
+              <option value="cardmarket">Cardmarket (lista acquisti)</option>
+              <option value="csv">CSV</option>
+            </select>
+          </label>
+          <button id="deck-export-btn" class="primary">Genera</button>
+        </div>
+        <textarea id="deck-export-text" rows="12" readonly placeholder="La lista esportata apparirà qui…"></textarea>
+        <div class="toolbar">
+          <button id="deck-export-copy" class="btn">📋 Copia</button>
+          <button id="deck-export-download" class="btn">💾 Scarica file</button>
+          <span id="deck-export-status" class="hint"></span>
+        </div>
+      </details>
       <div class="panel" id="deck-validation"></div>
       <div class="table-wrap">
         <table id="deck-table">

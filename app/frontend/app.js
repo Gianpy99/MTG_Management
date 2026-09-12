@@ -474,6 +474,59 @@ document.getElementById("deck-import-btn").addEventListener("click", async () =>
   }
 });
 
+// ---------- Deck export (AI decklist / Cardmarket buy-list) ----------
+async function generateDeckExport() {
+  const status = document.getElementById("deck-export-status");
+  const ta = document.getElementById("deck-export-text");
+  if (!currentDeckSlug) { status.textContent = "Seleziona prima un mazzo."; return; }
+  const scope = document.getElementById("deck-export-scope").value;
+  const board = document.getElementById("deck-export-board").value;
+  const fmt = document.getElementById("deck-export-format").value;
+  status.textContent = "Generazione\u2026";
+  try {
+    const r = await fetch(`${API}decks/${currentDeckSlug}/export?scope=${scope}&board=${board}&fmt=${fmt}`);
+    if (!r.ok) throw new Error(await r.text());
+    ta.value = await r.text();
+    status.textContent = ta.value.trim() ? "" : "Nessuna carta per questo filtro.";
+  } catch (err) {
+    ta.value = "";
+    status.textContent = "Errore: " + err.message;
+  }
+}
+document.getElementById("deck-export-btn").addEventListener("click", generateDeckExport);
+document.getElementById("deck-export-copy").addEventListener("click", async () => {
+  const ta = document.getElementById("deck-export-text");
+  const status = document.getElementById("deck-export-status");
+  if (!ta.value) { status.textContent = "Genera prima la lista."; return; }
+  try {
+    await navigator.clipboard.writeText(ta.value);
+  } catch {
+    ta.select();
+    document.execCommand("copy");
+  }
+  status.textContent = "Copiato \u2705";
+});
+document.getElementById("deck-export-download").addEventListener("click", () => {
+  const ta = document.getElementById("deck-export-text");
+  const status = document.getElementById("deck-export-status");
+  if (!ta.value) { status.textContent = "Genera prima la lista."; return; }
+  const fmt = document.getElementById("deck-export-format").value;
+  const scope = document.getElementById("deck-export-scope").value;
+  const deck = decksCache.find((d) => d.slug === currentDeckSlug);
+  const safe = (deck ? deck.name : "deck").replace(/[^a-z0-9]+/gi, "-").toLowerCase().replace(/^-+|-+$/g, "");
+  const ext = fmt === "csv" ? "csv" : "txt";
+  const blob = new Blob([ta.value], { type: fmt === "csv" ? "text/csv" : "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${safe}-${scope}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  status.textContent = "Scaricato \u2705";
+});
+
 // ---------- Import ----------
 document.getElementById("import-btn").addEventListener("click", async () => {
   const file = document.getElementById("import-file").files[0];

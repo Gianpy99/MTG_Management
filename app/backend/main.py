@@ -875,6 +875,81 @@ def validate_deck(slug: str, db: Session = Depends(get_db)) -> dict:
     }
 
 
+@app.get("/api/decks/{slug}/export", response_class=PlainTextResponse)
+def export_deck(
+    slug: str,
+    scope: str = "all",
+    board: str = "all",
+    fmt: str = "text",
+    db: Session = Depends(get_db),
+) -> PlainTextResponse:
+    """Export a deck as text for AI chats or a Cardmarket buy-list.
+
+    - scope: ``all`` (full decklist) | ``owned`` (copies you have) |
+      ``missing`` (copies still to buy; basics excluded).
+    - board: ``all`` | ``main`` | ``side``.
+    - fmt: ``text`` (commented decklist) | ``cardmarket`` (bare ``N Name`` lines) |
+      ``csv``.
+    """
+    deck = _get_deck(db, slug)
+    scope = scope if scope in ("all", "owned", "missing") else "all"
+    board = board if board in ("all", "main", "side") else "all"
+    fmt = fmt if fmt in ("text", "cardmarket", "csv") else "text"
+
+    q = db.query(DeckCard).join(Card).filter(DeckCard.deck_id == deck.id)
+    if board != "all":
+        q = q.filter(DeckCard.board == board)
+
+    # Aggregate required copies per card across the selected board(s).
+    agg: dict[int, dict] = {}
+    for s in q.all():
+        e = agg.setdefault(s.card_id, {"card": s.card, "needed": 0, "commander": False})
+        e["needed"] += s.quantity
+        e["commander"] = e["commander"] or bool(s.is_commander)
+
+    rows: list[tuple[tuple, int, Card]] = []
+    for e in agg.values():
+        card = e["card"]
+        owned = card.quantity or 0
+        name_l = (card.card_name or "").strip().lower()
+        is_basic = "basic" in (card.card_type or "").lower() or name_l in BASIC_LANDS
+        if scope == "owned":
+            qty = min(e["needed"], owned)
+        elif scope == "missing":
+            if is_basic:
+                continue
+            qty = max(0, e["needed"] - owned)
+        else:
+            qty = e["needed"]
+        if qty <= 0:
+            continue
+        rows.append(((0 if e["commander"] else 1, name_l), qty, card))
+    rows.sort(key=lambda r: r[0])
+
+    if fmt == "csv":
+        import csv
+
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(["Quantity", "Card Name", "Set", "Collector Number", "Rarity", "Owned", "In Deck"])
+        for _, qty, card in rows:
+            w.writerow(
+                [qty, card.card_name, card.set_name, card.collector_number,
+                 card.rarity, card.quantity, agg[card.id]["needed"]]
+            )
+        return PlainTextResponse(buf.getvalue(), media_type="text/csv")
+
+    lines: list[str] = []
+    if fmt == "text":
+        title = {"all": "Full decklist", "owned": "Owned cards", "missing": "Cards to buy"}[scope]
+        lines.append(f"// {deck.name} — {title}")
+        if deck.format == "commander" and deck.commander_name:
+            lines.append(f"// Commander: {deck.commander_name}")
+        lines.append("")
+    lines += [f"{qty} {card.card_name}" for _, qty, card in rows]
+    return PlainTextResponse(("\n".join(lines).strip() + "\n") if rows else "", media_type="text/plain")
+
+
 # --------------------------------------------------------------------------- #
 # Import / Export / Backup
 # --------------------------------------------------------------------------- #
