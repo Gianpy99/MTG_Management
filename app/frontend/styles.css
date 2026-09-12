@@ -138,6 +138,7 @@ button.primary, .primary { background: var(--gold); color: var(--bg); border: no
 
 .hint { color: var(--muted); font-size: 0.85rem; }
 pre { white-space: pre-wrap; color: var(--muted); font-size: 0.82rem; }
+.tree { white-space: pre; overflow-x: auto; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; color: var(--gold); font-size: 0.82rem; line-height: 1.35; }
 .ok { color: var(--green); }
 .err { color: var(--red); }
 

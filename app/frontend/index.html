@@ -15,6 +15,7 @@
       <button data-view="collection">Collection</button>
       <button data-view="stats">Stats</button>
       <button data-view="sets">Sets</button>
+      <button data-view="guide">Guida set</button>
       <button data-view="wishlist">Wishlist</button>
       <button data-view="deck">Decks</button>
       <button data-view="import">Import / Export</button>
@@ -234,6 +235,83 @@
         <p class="hint danger">Elimina dalla collezione (e dal deck) tutte le carte il cui set non è <em>The Hobbit</em> o <em>The Lord of the Rings</em>. Operazione non annullabile — puoi ripristinare il deck re-importando la lista.</p>
         <button id="cleanup-btn" class="btn danger">Rimuovi carte fuori scope</button>
         <pre id="cleanup-result"></pre>
+      </div>
+    </section>
+
+    <!-- Set guide -->
+    <section id="view-guide" class="view">
+      <div class="panel">
+        <h2>💍 Guida ai set della Terra di Mezzo</h2>
+        <p class="hint">“The Hobbit”, “The Hobbit Eternal”, “The Lord of the Rings” e “The Lord of the Rings Commander” <strong>non sono quattro set/prodotti equivalenti</strong>. I primi due sono l’uscita LOTR del 2023, gli altri due l’uscita Hobbit del 2026.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Uscita MTG</th><th>Codice</th><th>Soggetto</th><th>Data</th><th>Commander?</th></tr></thead>
+            <tbody>
+              <tr><td>The Lord of the Rings: Tales of Middle-earth</td><td><span class="ed-badge">LTR</span></td><td>LOTR</td><td>23 giu 2023</td><td>Sì (set principale)</td></tr>
+              <tr><td>The Lord of the Rings: Tales of Middle-earth Commander</td><td><span class="ed-badge">LTC</span></td><td>LOTR</td><td>23 giu 2023</td><td>Sì — carte/mazzi dedicati Commander</td></tr>
+              <tr><td>Magic: The Gathering — The Hobbit</td><td><span class="ed-badge">HOB</span></td><td>The Hobbit</td><td>14 ago 2026</td><td>Sì, con carte HOB</td></tr>
+              <tr><td>The Hobbit Eternal</td><td><span class="ed-badge">HOC</span></td><td>The Hobbit / Terra di Mezzo</td><td>14 ago 2026</td><td>Sì — Commander/Legacy/Vintage</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>1 · LOTR — Tales of Middle-earth (LTR)</h3>
+          <p>Il grande set LOTR del <strong>2023</strong>. Contiene le carte “normali” — Frodo, Sam, Aragorn, Gandalf, Sauron, The One Ring, ecc. Set completo e draftabile, legale in <strong>Modern, Legacy, Vintage e Commander</strong>. È il set a cui appartiene la maggior parte della tua collezione.</p>
+        </div>
+        <div class="panel">
+          <h3>2 · LOTR Commander (LTC)</h3>
+          <p><strong>Non</strong> è semplicemente un’altra versione di LTR: è l’uscita companion <strong>dedicata a Commander</strong> (23 giu 2023), con 4 mazzi precostruiti — <em>Riders of Rohan, Food and Fellowship, Elven Council, The Hosts of Mordor</em> — e 20 carte inedite per mazzo, legali in Commander/Legacy/Vintage. La tua collezione LOTR ha quindi <strong>due pool</strong>: <span class="ed-badge">LTR</span> (set principale) e <span class="ed-badge">LTC</span> (carte Commander).</p>
+        </div>
+        <div class="panel">
+          <h3>3 · The Hobbit (HOB)</h3>
+          <p>Uscita completamente nuova del <strong>2026</strong> basata su <em>Lo Hobbit</em>. Set principale, <strong>legale in tutti i formati</strong>. Contiene Bilbo, Thorin, Dáin, Fíli &amp; Kíli, Smaug, Gandalf, Bard, Pontelagolungo, Erebor, ecc. È la collezione che stai costruendo di recente.</p>
+        </div>
+        <div class="panel">
+          <h3>4 · The Hobbit Eternal (HOC)</h3>
+          <p>La più confusa. <strong>Non</strong> è una seconda espansione Hobbit come LTC lo è per LOTR: è il <strong>pool companion legale nei formati Eternal</strong> (Commander + Legacy + Vintage). Molte carte ambite stanno qui, non in HOB — es. <em>The One Ring, Galadriel Light of Valinor, Orcish Bowmasters, Thranduil the Strategist, Dáin of the Ancient Halls</em>. Se ti mancano, potrebbero appartenere a HOC: non le hai “perse” da HOB.</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Struttura per la collezione</h3>
+          <pre class="tree">MIDDLE-EARTH
+│
+├── LORD OF THE RINGS — 2023
+│   ├── LTR — Tales of Middle-earth
+│   └── LTC — Tales of Middle-earth Commander
+│
+└── THE HOBBIT — 2026
+    ├── HOB — The Hobbit
+    └── HOC — The Hobbit Eternal</pre>
+          <p class="hint">Nel tracker ogni carta ha già un’<strong>Edizione</strong> (<span class="ed-badge">LTR</span> <span class="ed-badge">LTC</span> <span class="ed-badge">HOB</span> <span class="ed-badge">HOC</span>) per tenere separati i pool anche quando due carte condividono lo stesso numero da collezione.</p>
+        </div>
+        <div class="panel">
+          <h3>Prodotti (≠ set)</h3>
+          <pre class="tree">PRODOTTI
+│
+├── LOTR
+│   ├── Boosters · Bundle · Gift Bundle
+│   ├── Commander Decks
+│   └── Scene Boxes · Collector Boosters
+│
+└── HOBBIT
+    ├── Play Boosters · Bundle · Gift Bundle
+    └── Scene Boxes · Collector Boosters</pre>
+          <p class="hint">Il <strong>set</strong> di una carta e il <strong>prodotto</strong> da cui l’hai ottenuta sono cose diverse: es. il Bundle Hobbit contiene 9 Play Booster che alimentano soprattutto la collezione <span class="ed-badge">HOB</span>.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Due obiettivi diversi per “completare Hobbit”</h3>
+        <p>🟢 <strong>Completare HOB</strong> — il set principale: obiettivo da collezionista ragionevole.<br />
+        🟡 <strong>Completare HOC</strong> — <em>The Hobbit Eternal</em>: qui i costi salgono, perché diverse carte ambite stanno in HOC.</p>
+        <p class="hint">Prima di comprare “alla cieca” un altro Gift Bundle da £77 per “completare Hobbit”, la domanda giusta è: <strong>quali carte HOB ti mancano davvero, e quali carte HOC ti interessano?</strong> — è qui che il tracker diventa utile.</p>
+        <p class="hint"><strong>Nota terminologica:</strong> HOC <em>non</em> è l’equivalente di “precon Commander dello Hobbit”. L’uscita Hobbit non ha la stessa struttura a 4 mazzi precostruiti di LOTR/LTC: HOC è il pool companion legale negli Eternal. In DB tieni <span class="ed-badge">HOB</span> e <span class="ed-badge">HOC</span> separati, esattamente come <span class="ed-badge">LTR</span> e <span class="ed-badge">LTC</span>.</p>
+        <p class="hint">Fonti: <a href="https://www.magic.wizards.com/en/news/feature/collecting-the-hobbit" target="_blank" rel="noopener">Collecting The Hobbit</a> · <a href="https://magic.wizards.com/en/news/feature/collecting-the-lord-of-the-rings-tales-of-middle-earth" target="_blank" rel="noopener">Collecting LOTR</a> (Wizards of the Coast).</p>
       </div>
     </section>
   </main>
