@@ -317,6 +317,10 @@ let currentDeckSlug = null;
 let deckViewMode = "visual";
 const DV_LABEL = { Commander: "👑 Comandante", Creature: "Creature", Instant: "Istantanei", Sorcery: "Stregonerie", Artifact: "Artefatti", Enchantment: "Incantesimi", Planeswalker: "Planeswalker", Battle: "Battaglie", Land: "Terre", Other: "Altro" };
 const MANA_COL = { W: "#f6f3d6", U: "#a9cbe8", B: "#b7afac", R: "#e79a86", G: "#96cfa6", C: "#cfc9c2" };
+const BASIC_NAMES = new Set(["plains", "island", "swamp", "mountain", "forest", "wastes"]);
+function isBasicCard(card) {
+  return /basic/i.test(card.card_type || "") || BASIC_NAMES.has((card.card_name || "").trim().toLowerCase());
+}
 
 async function loadDeck() {
   decksCache = await api.get("decks");
@@ -373,7 +377,7 @@ async function renderDeck() {
         <td>${d.board === "side" ? '<span class="pill">SB</span>' : "—"}</td>
         <td>${d.quantity}</td>
         <td>${d.role || ""}</td>
-        <td>${d.card.quantity >= d.quantity
+        <td>${d.card.quantity >= d.quantity || isBasicCard(d.card)
           ? `<span class="pill owned">owned</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`
           : `<span class="pill missing">need</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`}</td>
         <td>${d.is_commander ? "👑" : ""}</td>

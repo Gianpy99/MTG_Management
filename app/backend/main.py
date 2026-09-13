@@ -351,6 +351,13 @@ BASIC_LANDS = {
 }
 
 
+def _is_basic(card) -> bool:
+    """Basic lands are freely available in paper, so never treated as 'to buy'."""
+    if card is None:
+        return False
+    return "basic" in (card.card_type or "").lower() or (card.card_name or "").strip().lower() in BASIC_LANDS
+
+
 def _slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.strip().lower()).strip("-") or "deck"
 
@@ -380,7 +387,7 @@ def _with_summary(deck: Deck) -> Deck:
             side += s.quantity
         else:
             main += s.quantity
-        if s.card is not None and s.card.quantity >= s.quantity:
+        if s.card is not None and (s.card.quantity >= s.quantity or _is_basic(s.card)):
             owned += s.quantity
     deck.main_count = main
     deck.side_count = side
@@ -876,7 +883,7 @@ def validate_deck(slug: str, db: Session = Depends(get_db)) -> dict:
             warnings.append(f"{card.card_name}: outside project set scope ({card.set_name}).")
 
     total = main_total + side_total
-    owned_slots = sum(s.quantity for s in slots if s.card.quantity >= s.quantity)
+    owned_slots = sum(s.quantity for s in slots if s.card.quantity >= s.quantity or _is_basic(s.card))
     return {
         "valid": len(errors) == 0,
         "format": deck.format,
@@ -1029,12 +1036,12 @@ def deck_analysis(slug: str, db: Session = Depends(get_db)) -> dict:
         cmc = _cmc(c.mana_cost)
         groups[cat].append({
             "name": c.card_name, "mana_cost": c.mana_cost or "", "cmc": cmc,
-            "qty": q, "owned": (c.quantity or 0) >= q, "owned_qty": c.quantity or 0,
+            "qty": q, "owned": (c.quantity or 0) >= q or _is_basic(c), "owned_qty": c.quantity or 0,
             "type": c.card_type, "power": c.power, "toughness": c.toughness,
             "edition": c.edition, "is_commander": bool(s.is_commander),
         })
         p["total"] += q
-        if (c.quantity or 0) >= q:
+        if (c.quantity or 0) >= q or _is_basic(c):
             p["owned"] += q
         for sym in re.findall(r"\{([^}]+)\}", c.mana_cost or ""):
             for ch in sym.split("/"):
