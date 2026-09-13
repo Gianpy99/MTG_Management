@@ -913,12 +913,13 @@ def export_deck(
       ``missing`` (copies still to buy; basics excluded).
     - board: ``all`` | ``main`` | ``side``.
     - fmt: ``text`` (commented decklist) | ``cardmarket`` (bare ``N Name`` lines) |
+      ``arena`` (MTG Arena import: ``N Name (SET) Number`` under Commander/Deck/Sideboard) |
       ``csv``.
     """
     deck = _get_deck(db, slug)
     scope = scope if scope in ("all", "owned", "missing") else "all"
     board = board if board in ("all", "main", "side") else "all"
-    fmt = fmt if fmt in ("text", "cardmarket", "csv") else "text"
+    fmt = fmt if fmt in ("text", "cardmarket", "arena", "csv") else "text"
 
     q = db.query(DeckCard).join(Card).filter(DeckCard.deck_id == deck.id)
     if board != "all":
@@ -927,9 +928,12 @@ def export_deck(
     # Aggregate required copies per card across the selected board(s).
     agg: dict[int, dict] = {}
     for s in q.all():
-        e = agg.setdefault(s.card_id, {"card": s.card, "needed": 0, "commander": False})
+        e = agg.setdefault(
+            s.card_id, {"card": s.card, "needed": 0, "commander": False, "boards": set()}
+        )
         e["needed"] += s.quantity
         e["commander"] = e["commander"] or bool(s.is_commander)
+        e["boards"].add(s.board)
 
     rows: list[tuple[tuple, int, Card]] = []
     for e in agg.values():
@@ -962,6 +966,30 @@ def export_deck(
                  card.rarity, card.quantity, agg[card.id]["needed"]]
             )
         return PlainTextResponse(buf.getvalue(), media_type="text/csv")
+
+    if fmt == "arena":
+        def arena_line(qty: int, card: Card) -> str:
+            code = (card.edition or "").upper() or "UNK"
+            num = card.collector_number or "0"
+            name = (card.card_name or "").split(" // ")[0].strip()  # front face only
+            return f"{qty} {name} ({code}) {num}"
+
+        cmd_lines, deck_lines, side_lines = [], [], []
+        for _, qty, card in rows:
+            e = agg[card.id]
+            if e["commander"]:
+                cmd_lines.append(arena_line(qty, card))
+            elif e["boards"] == {"side"}:
+                side_lines.append(arena_line(qty, card))
+            else:
+                deck_lines.append(arena_line(qty, card))
+        out: list[str] = []
+        if cmd_lines:
+            out += ["Commander", *cmd_lines, ""]
+        out += ["Deck", *deck_lines]
+        if side_lines:
+            out += ["", "Sideboard", *side_lines]
+        return PlainTextResponse(("\n".join(out).strip() + "\n") if rows else "", media_type="text/plain")
 
     lines: list[str] = []
     if fmt == "text":
