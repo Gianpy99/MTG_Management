@@ -142,6 +142,43 @@ pre { white-space: pre-wrap; color: var(--muted); font-size: 0.82rem; }
 .ok { color: var(--green); }
 .err { color: var(--red); }
 
+/* ---------- Visual deck view ---------- */
+.deck-view-toggle { margin: 0.4rem 0 0.8rem; gap: 0.4rem; }
+#deck-visual[hidden] { display: none; }
+.dv-wrap { display: grid; grid-template-columns: 1fr 330px; gap: 1rem; align-items: start; }
+@media (max-width: 900px) { .dv-wrap { grid-template-columns: 1fr; } }
+.dv-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 0.7rem; }
+.dv-pile { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem 0.6rem; }
+.dv-pile h4 { margin: 0 0 0.4rem; font-size: 0.9rem; display: flex; justify-content: space-between; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+.dv-pile h4 span { color: var(--muted); font-weight: normal; }
+.dv-pile ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.dv-card { display: flex; align-items: center; gap: 0.4rem; padding: 2px 4px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; }
+.dv-card:hover { background: var(--panel-2); }
+.dv-card.need .dv-name { color: var(--muted); }
+.dv-card.need::after { content: "•"; color: var(--red); margin-left: auto; font-size: 1.1rem; line-height: 0; }
+.dv-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dv-mc { display: inline-flex; gap: 1px; flex: 0 0 auto; }
+.dv-pip { width: 15px; height: 15px; border-radius: 50%; font-size: 9px; font-weight: 700; color: #1a1a1a; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,.35); }
+.dv-pip-c { background: #cfc9c2; }
+.dv-side { display: flex; flex-direction: column; gap: 0.75rem; }
+.dv-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.8rem; }
+.dv-panel h4 { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--gold); }
+.dv-arch { color: var(--ink); font-weight: 700; }
+.dv-ad { display: flex; height: 24px; border-radius: 6px; overflow: hidden; font-size: 0.72rem; font-weight: 700; }
+.dv-ad-att { background: linear-gradient(90deg, #8f2c1c, #e79a86); color: #1a1a1a; display: flex; align-items: center; padding-left: 6px; min-width: fit-content; white-space: nowrap; }
+.dv-ad-def { background: linear-gradient(90deg, #35507e, #a9cbe8); color: #1a1a1a; flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; white-space: nowrap; }
+.dv-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 0.6rem; }
+.dv-metric { background: var(--panel-2); border-radius: 8px; padding: 6px 4px; text-align: center; }
+.dv-metric span { display: block; font-size: 1.05rem; font-weight: 700; color: var(--gold); }
+.dv-metric label { font-size: 0.64rem; color: var(--muted); }
+.dv-curve { display: flex; align-items: flex-end; gap: 4px; height: 115px; }
+.dv-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 2px; font-size: 0.66rem; color: var(--muted); }
+.dv-bar b { color: var(--ink); }
+.dv-bar-fill { width: 100%; background: linear-gradient(180deg, var(--gold), #6f5217); border-radius: 4px 4px 0 0; min-height: 4px; }
+.dv-colours { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 0.6rem; }
+.dv-cbadge { color: #1a1a1a; font-weight: 700; font-size: 0.72rem; padding: 2px 7px; border-radius: 10px; }
+#deck-strategy { width: 100%; resize: vertical; }
+
 /* Clickable card name */
 .card-link {
   background: none;

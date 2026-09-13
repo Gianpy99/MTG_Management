@@ -95,6 +95,13 @@ class DeckCreateIn(BaseModel):
     notes: str = ""
 
 
+class DeckUpdateIn(BaseModel):
+    name: str | None = None
+    notes: str | None = None
+    commander_name: str | None = None
+    allowed_colours: str | None = None
+
+
 class DeckOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -314,6 +314,9 @@ document.querySelector("#wish-table tbody").addEventListener("click", async (e) 
 // ---------- Deck ----------
 let decksCache = [];
 let currentDeckSlug = null;
+let deckViewMode = "visual";
+const DV_LABEL = { Commander: "👑 Comandante", Creature: "Creature", Instant: "Istantanei", Sorcery: "Stregonerie", Artifact: "Artefatti", Enchantment: "Incantesimi", Planeswalker: "Planeswalker", Battle: "Battaglie", Land: "Terre", Other: "Altro" };
+const MANA_COL = { W: "#f6f3d6", U: "#a9cbe8", B: "#b7afac", R: "#e79a86", G: "#96cfa6", C: "#cfc9c2" };
 
 async function loadDeck() {
   decksCache = await api.get("decks");
@@ -379,7 +382,114 @@ async function renderDeck() {
     )
     .join("");
   setupLazyThumbs("#deck-table");
+  applyDeckViewMode();
 }
+
+// ---------- Visual deck view ----------
+function manaPips(mc) {
+  if (!mc) return "";
+  return (mc.match(/\{[^}]+\}/g) || [])
+    .map((sym) => {
+      const s = sym.slice(1, -1);
+      if (/^\d+$/.test(s) || ["X", "Y", "Z"].includes(s)) return `<i class="dv-pip dv-pip-c">${s}</i>`;
+      const col = MANA_COL[s.split("/")[0]] || "#cfc9c2";
+      return `<i class="dv-pip" style="background:${col}">${s.replace("/", "")}</i>`;
+    })
+    .join("");
+}
+
+async function applyDeckViewMode() {
+  const vis = deckViewMode === "visual";
+  document.getElementById("deck-visual").hidden = !vis;
+  const tableWrap = document.querySelector("#view-deck .table-wrap");
+  if (tableWrap) tableWrap.hidden = vis;
+  document.getElementById("deck-mode-visual").classList.toggle("active", vis);
+  document.getElementById("deck-mode-table").classList.toggle("active", !vis);
+  if (vis) await renderDeckVisual();
+}
+
+async function renderDeckVisual() {
+  const el = document.getElementById("deck-visual");
+  if (!currentDeckSlug) { el.innerHTML = ""; return; }
+  el.innerHTML = '<p class="hint">Analisi del mazzo\u2026</p>';
+  let a;
+  try { a = await api.get(`decks/${currentDeckSlug}/analysis`); }
+  catch (e) { el.innerHTML = '<p class="err">Errore analisi: ' + e.message + "</p>"; return; }
+
+  const pile = (cat, cards) => `
+    <section class="dv-pile">
+      <h4>${DV_LABEL[cat] || cat} <span>${cards.reduce((n, c) => n + c.qty, 0)}</span></h4>
+      <ul>${cards
+        .map((c) => `<li class="dv-card ${c.owned ? "" : "need"}" data-name="${encodeURIComponent(c.name)}">
+          <span class="dv-mc">${manaPips(c.mana_cost)}</span>
+          <span class="dv-name">${c.qty > 1 ? c.qty + "\u00d7 " : ""}${c.name}${c.is_commander ? " 👑" : ""}</span>
+        </li>`)
+        .join("")}</ul>
+    </section>`;
+  const board = Object.entries(a.groups).map(([cat, cards]) => pile(cat, cards)).join("");
+
+  const curveMax = Math.max(1, ...Object.values(a.curve));
+  const curveBars = Object.entries(a.curve)
+    .map(([k, v]) => `<div class="dv-bar"><b>${v}</b><span class="dv-bar-fill" style="height:${Math.round(90 * v / curveMax) + 4}%"></span><i>${k}</i></div>`)
+    .join("");
+  const colBadges = Object.entries(a.colours)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `<span class="dv-cbadge" style="background:${MANA_COL[k]}">${k} ${v}</span>`)
+    .join("");
+
+  const P = a.profile;
+  const metric = (l, v) => `<div class="dv-metric"><span>${v}</span><label>${l}</label></div>`;
+  const archetype = P.aggro_pct >= 62 ? "Aggro" : P.aggro_pct <= 42 ? "Controllo" : "Midrange";
+  const strat = (a.strategy || "").replace(/</g, "&lt;");
+
+  el.innerHTML = `
+    <div class="dv-wrap">
+      <div class="dv-board">${board}</div>
+      <aside class="dv-side">
+        <div class="dv-panel">
+          <h4>Profilo — <span class="dv-arch">${archetype}</span></h4>
+          <div class="dv-ad"><span class="dv-ad-att" style="width:${P.aggro_pct}%">⚔️ ${P.aggro_pct}%</span><span class="dv-ad-def">🛡️ ${100 - P.aggro_pct}%</span></div>
+          <div class="dv-metrics">
+            ${metric("Creature", P.creatures)}${metric("Potenza tot.", P.power)}${metric("Evasivi", P.evasion)}
+            ${metric("Blocker", P.blockers)}${metric("Rimozione", P.removal)}${metric("Board wipe", P.wipes)}
+            ${metric("Counter", P.counters)}${metric("Rampa", P.ramp)}${metric("Pescata", P.draw)}
+            ${metric("CMC medio", P.avg_cmc)}${metric("Terre", P.lands)}${metric("Possedute", a.owned + "/" + a.total)}
+          </div>
+        </div>
+        <div class="dv-panel">
+          <h4>Curva di mana</h4>
+          <div class="dv-curve">${curveBars}</div>
+          <div class="dv-colours">${colBadges}</div>
+        </div>
+        <div class="dv-panel">
+          <h4>Strategia in partita</h4>
+          <textarea id="deck-strategy" rows="8" placeholder="Descrivi come pilotare il mazzo durante la gara\u2026">${strat}</textarea>
+          <div class="toolbar"><button id="deck-strategy-save" class="btn">💾 Salva strategia</button><span id="deck-strategy-status" class="hint"></span></div>
+        </div>
+      </aside>
+    </div>`;
+  el.querySelectorAll(".dv-card").forEach((li) =>
+    li.addEventListener("click", () => openCardModal(decodeURIComponent(li.dataset.name)))
+  );
+  document.getElementById("deck-strategy-save").addEventListener("click", saveStrategy);
+}
+
+async function saveStrategy() {
+  const ta = document.getElementById("deck-strategy");
+  const st = document.getElementById("deck-strategy-status");
+  st.textContent = "Salvataggio\u2026";
+  try {
+    await api.send("PATCH", `decks/${currentDeckSlug}`, { notes: ta.value });
+    const d = decksCache.find((x) => x.slug === currentDeckSlug);
+    if (d) d.notes = ta.value;
+    st.textContent = "Salvato \u2705";
+  } catch (e) {
+    st.textContent = "Errore: " + e.message;
+  }
+}
+
+document.getElementById("deck-mode-visual").addEventListener("click", () => { deckViewMode = "visual"; applyDeckViewMode(); });
+document.getElementById("deck-mode-table").addEventListener("click", () => { deckViewMode = "table"; applyDeckViewMode(); });
 
 document.getElementById("deck-select").addEventListener("change", (e) => {
   currentDeckSlug = e.target.value;

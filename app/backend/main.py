@@ -33,6 +33,7 @@ from schemas import (
     DeckImportIn,
     DeckOut,
     DeckSummaryOut,
+    DeckUpdateIn,
     QuantityUpdate,
     WishlistIn,
     WishlistOut,
@@ -409,6 +410,22 @@ def create_deck(payload: DeckCreateIn, db: Session = Depends(get_db)) -> Deck:
         notes=payload.notes,
     )
     db.add(deck)
+    db.commit()
+    db.refresh(deck)
+    return deck
+
+
+@app.patch("/api/decks/{slug}", response_model=DeckOut)
+def update_deck(slug: str, payload: DeckUpdateIn, db: Session = Depends(get_db)) -> Deck:
+    deck = _get_deck(db, slug)
+    if payload.name is not None:
+        deck.name = payload.name.strip() or deck.name
+    if payload.notes is not None:
+        deck.notes = payload.notes
+    if payload.commander_name is not None:
+        deck.commander_name = payload.commander_name.strip()
+    if payload.allowed_colours is not None:
+        deck.allowed_colours = payload.allowed_colours.strip().upper()
     db.commit()
     db.refresh(deck)
     return deck
@@ -948,6 +965,130 @@ def export_deck(
         lines.append("")
     lines += [f"{qty} {card.card_name}" for _, qty, card in rows]
     return PlainTextResponse(("\n".join(lines).strip() + "\n") if rows else "", media_type="text/plain")
+
+
+_EVASION_KW = ("flying", "menace", "trample", "can't be blocked", "shadow",
+               "horsemanship", "skulk", "intimidate")
+_RAMP_KW = ("add {", "add one mana", "add two mana", "treasure",
+            "search your library for a basic land", "search your library for a forest",
+            "search your library for a plains", "search your library for an island",
+            "search your library for a swamp", "search your library for a mountain",
+            "onto the battlefield tapped")
+
+
+def _cmc(mc: str) -> int:
+    total = 0
+    for sym in re.findall(r"\{([^}]+)\}", mc or ""):
+        if sym.isdigit():
+            total += int(sym)
+        elif sym not in ("X", "Y", "Z"):
+            total += 1
+    return total
+
+
+def _int_or_zero(v) -> int:
+    try:
+        return int(str(v).strip())
+    except (TypeError, ValueError):
+        return 0
+
+
+@app.get("/api/decks/{slug}/analysis")
+def deck_analysis(slug: str, db: Session = Depends(get_db)) -> dict:
+    """Grouped card piles + mana curve + colour spread + an attack/defence profile."""
+    deck = _get_deck(db, slug)
+    slots = (
+        db.query(DeckCard).join(Card)
+        .filter(DeckCard.deck_id == deck.id, DeckCard.board != "side")
+        .order_by(DeckCard.is_commander.desc(), Card.card_name)
+        .all()
+    )
+    order = ["Commander", "Planeswalker", "Creature", "Instant", "Sorcery",
+             "Artifact", "Enchantment", "Battle", "Land", "Other"]
+    groups: dict[str, list] = {k: [] for k in order}
+    curve = {str(i): 0 for i in range(7)}
+    curve["7+"] = 0
+    colours = {"W": 0, "U": 0, "B": 0, "R": 0, "G": 0, "C": 0}
+    p = dict(creatures=0, power=0, toughness=0, evasion=0, haste=0, removal=0,
+             wipes=0, ramp=0, draw=0, counters=0, blockers=0, cmc_sum=0, cmc_n=0,
+             owned=0, total=0)
+    for s in slots:
+        c = s.card
+        q = s.quantity
+        t = (c.card_type or "").lower()
+        o = (c.oracle_text or "").lower()
+        cat = ("Commander" if s.is_commander else
+               "Land" if "land" in t else
+               "Creature" if "creature" in t else
+               "Planeswalker" if "planeswalker" in t else
+               "Instant" if "instant" in t else
+               "Sorcery" if "sorcery" in t else
+               "Artifact" if "artifact" in t else
+               "Enchantment" if "enchantment" in t else
+               "Battle" if "battle" in t else "Other")
+        cmc = _cmc(c.mana_cost)
+        groups[cat].append({
+            "name": c.card_name, "mana_cost": c.mana_cost or "", "cmc": cmc,
+            "qty": q, "owned": (c.quantity or 0) >= q, "owned_qty": c.quantity or 0,
+            "type": c.card_type, "power": c.power, "toughness": c.toughness,
+            "edition": c.edition, "is_commander": bool(s.is_commander),
+        })
+        p["total"] += q
+        if (c.quantity or 0) >= q:
+            p["owned"] += q
+        for sym in re.findall(r"\{([^}]+)\}", c.mana_cost or ""):
+            for ch in sym.split("/"):
+                if ch in colours:
+                    colours[ch] += q
+        if "land" not in t:
+            curve["7+" if cmc >= 7 else str(cmc)] += q
+            p["cmc_sum"] += cmc * q
+            p["cmc_n"] += q
+        if "creature" in t:
+            p["creatures"] += q
+            p["power"] += _int_or_zero(c.power) * q
+            p["toughness"] += _int_or_zero(c.toughness) * q
+            if any(k in o for k in _EVASION_KW):
+                p["evasion"] += q
+            if "haste" in o:
+                p["haste"] += q
+            if "defender" in o or _int_or_zero(c.toughness) >= 5:
+                p["blockers"] += q
+        if ("destroy target creature" in o or "exile target creature" in o
+                or "destroy target permanent" in o or "fight" in o
+                or "target creature gets -" in o
+                or ("deals" in o and "damage to target creature" in o)
+                or ("deals" in o and "damage to any target" in o)):
+            p["removal"] += q
+        if ("destroy all" in o or "each player sacrifices" in o
+                or "exile all creatures" in o or "all creatures get -" in o
+                or "creatures your opponents control get -" in o):
+            p["wipes"] += q
+        if any(k in o for k in _RAMP_KW):
+            p["ramp"] += q
+        if "draw a card" in o or "draw two" in o or "draw three" in o or "scry" in o:
+            p["draw"] += q
+        if "counter target" in o:
+            p["counters"] += q
+
+    offense = p["power"] + 2 * p["evasion"] + 2 * p["haste"]
+    defense = p["toughness"] + 3 * p["wipes"] + 2 * p["counters"] + p["removal"] + 2 * p["blockers"]
+    aggro_pct = round(100 * offense / (offense + defense)) if (offense + defense) else 50
+    avg_cmc = round(p["cmc_sum"] / p["cmc_n"], 2) if p["cmc_n"] else 0
+    type_counts = {k: sum(x["qty"] for x in v) for k, v in groups.items() if v}
+    return {
+        "name": deck.name, "format": deck.format, "commander": deck.commander_name,
+        "colours": colours, "curve": curve, "type_counts": type_counts,
+        "groups": {k: groups[k] for k in order if groups[k]},
+        "profile": {
+            "creatures": p["creatures"], "power": p["power"], "toughness": p["toughness"],
+            "evasion": p["evasion"], "haste": p["haste"], "removal": p["removal"],
+            "wipes": p["wipes"], "ramp": p["ramp"], "draw": p["draw"], "counters": p["counters"],
+            "blockers": p["blockers"], "avg_cmc": avg_cmc, "lands": type_counts.get("Land", 0),
+            "offense": offense, "defense": defense, "aggro_pct": aggro_pct,
+        },
+        "owned": p["owned"], "total": p["total"], "strategy": deck.notes or "",
+    }
 
 
 # --------------------------------------------------------------------------- #
