@@ -93,6 +93,34 @@
           <tbody></tbody>
         </table>
       </div>
+      <details class="panel" id="col-export-panel">
+        <summary><strong>⬇️ Esporta lista</strong> (le carte con i filtri applicati)</summary>
+        <p class="hint">Esporta le carte attualmente filtrate come testo per altre chat AI, come lista d'acquisto per Cardmarket o come CSV.</p>
+        <div class="toolbar">
+          <label class="hint">Copie:
+            <select id="col-export-qty">
+              <option value="auto">Possedute (1 per le mancanti)</option>
+              <option value="owned">Solo copie possedute</option>
+              <option value="one">1 per carta</option>
+            </select>
+          </label>
+          <label class="hint">Formato:
+            <select id="col-export-format">
+              <option value="text">Testo (AI / lista)</option>
+              <option value="arena">MTG Arena (import)</option>
+              <option value="cardmarket">Cardmarket (lista acquisti)</option>
+              <option value="csv">CSV</option>
+            </select>
+          </label>
+          <button id="col-export-btn" class="primary">Genera</button>
+        </div>
+        <textarea id="col-export-text" rows="12" readonly placeholder="La lista esportata apparirà qui…"></textarea>
+        <div class="toolbar">
+          <button id="col-export-copy" class="btn">📋 Copia</button>
+          <button id="col-export-download" class="btn">💾 Scarica file</button>
+          <span id="col-export-status" class="hint"></span>
+        </div>
+      </details>
     </section>
 
     <!-- Stats -->

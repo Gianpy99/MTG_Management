@@ -75,7 +75,7 @@ async function loadCollection() {
   await refreshCollection();
 }
 
-async function refreshCollection() {
+function collectionFilterParams() {
   const q = document.getElementById("col-search").value.trim();
   const set = document.getElementById("col-set").value;
   const owned = document.getElementById("col-owned").value;
@@ -91,7 +91,11 @@ async function refreshCollection() {
   if (colour) params.set("colour", colour);
   if (cardType) params.set("card_type", cardType);
   if (edition) params.set("edition", edition);
-  colCards = await api.get("cards?" + params.toString());
+  return params;
+}
+
+async function refreshCollection() {
+  colCards = await api.get("cards?" + collectionFilterParams().toString());
   renderCollection();
 }
 
@@ -182,6 +186,54 @@ document.querySelector("#col-table tbody").addEventListener("change", async (e) 
 ["col-search", "col-set", "col-owned", "col-rarity", "col-colour", "col-type", "col-edition"].forEach((id) => {
   const el = document.getElementById(id);
   el.addEventListener(el.tagName === "INPUT" ? "input" : "change", debounce(refreshCollection, 250));
+});
+
+// ---------- Collection export (filtered list: AI / Cardmarket / CSV) ----------
+document.getElementById("col-export-btn").addEventListener("click", async () => {
+  const status = document.getElementById("col-export-status");
+  const ta = document.getElementById("col-export-text");
+  const params = collectionFilterParams();
+  params.set("fmt", document.getElementById("col-export-format").value);
+  params.set("qty", document.getElementById("col-export-qty").value);
+  status.textContent = "Generazione\u2026";
+  try {
+    const r = await fetch(`${API}cards/export?` + params.toString());
+    if (!r.ok) throw new Error(await r.text());
+    ta.value = await r.text();
+    status.textContent = ta.value.trim() ? "" : "Nessuna carta per questo filtro.";
+  } catch (err) {
+    ta.value = "";
+    status.textContent = "Errore: " + err.message;
+  }
+});
+document.getElementById("col-export-copy").addEventListener("click", async () => {
+  const ta = document.getElementById("col-export-text");
+  const status = document.getElementById("col-export-status");
+  if (!ta.value) { status.textContent = "Genera prima la lista."; return; }
+  try {
+    await navigator.clipboard.writeText(ta.value);
+  } catch {
+    ta.select();
+    document.execCommand("copy");
+  }
+  status.textContent = "Copiato \u2705";
+});
+document.getElementById("col-export-download").addEventListener("click", () => {
+  const ta = document.getElementById("col-export-text");
+  const status = document.getElementById("col-export-status");
+  if (!ta.value) { status.textContent = "Genera prima la lista."; return; }
+  const fmt = document.getElementById("col-export-format").value;
+  const ext = fmt === "csv" ? "csv" : "txt";
+  const blob = new Blob([ta.value], { type: fmt === "csv" ? "text/csv" : "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `collection-${fmt}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  status.textContent = "Scaricato \u2705";
 });
 
 // ---------- Stats ----------

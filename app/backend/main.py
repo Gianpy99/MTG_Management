@@ -138,8 +138,8 @@ def set_completion(set_name: str, db: Session = Depends(get_db)) -> dict:
 # --------------------------------------------------------------------------- #
 # Cards / collection
 # --------------------------------------------------------------------------- #
-@app.get("/api/cards", response_model=list[CardOut])
-def list_cards(
+def _filtered_cards(
+    db: Session,
     set: str | None = None,
     owned: bool | None = None,
     q: str | None = None,
@@ -147,8 +147,8 @@ def list_cards(
     colour: str | None = None,
     card_type: str | None = None,
     edition: str | None = None,
-    db: Session = Depends(get_db),
 ) -> list[Card]:
+    """Collection query shared by the card list and the filtered export."""
     query = db.query(Card)
     if set:
         query = query.filter(Card.set_name == set)
@@ -168,6 +168,100 @@ def list_cards(
         like = f"%{q}%"
         query = query.filter(Card.card_name.ilike(like) | Card.oracle_text.ilike(like))
     return query.order_by(Card.set_name, Card.card_name).all()
+
+
+@app.get("/api/cards", response_model=list[CardOut])
+def list_cards(
+    set: str | None = None,
+    owned: bool | None = None,
+    q: str | None = None,
+    rarity: str | None = None,
+    colour: str | None = None,
+    card_type: str | None = None,
+    edition: str | None = None,
+    db: Session = Depends(get_db),
+) -> list[Card]:
+    return _filtered_cards(db, set, owned, q, rarity, colour, card_type, edition)
+
+
+@app.get("/api/cards/export", response_class=PlainTextResponse)
+def export_cards(
+    set: str | None = None,
+    owned: bool | None = None,
+    q: str | None = None,
+    rarity: str | None = None,
+    colour: str | None = None,
+    card_type: str | None = None,
+    edition: str | None = None,
+    fmt: str = "text",
+    qty: str = "auto",
+    db: Session = Depends(get_db),
+) -> PlainTextResponse:
+    """Export the collection cards matching the current view filters.
+
+    Filters mirror ``/api/cards``.
+
+    - fmt: ``text`` (commented list) | ``cardmarket`` (bare ``N Name`` lines) |
+      ``arena`` (``N Name (SET) Number``) | ``csv``.
+    - qty: ``auto`` (owned copies, 1 for missing cards) | ``owned`` (owned copies,
+      missing cards skipped) | ``one`` (1 copy per card).
+    """
+    fmt = fmt if fmt in ("text", "cardmarket", "arena", "csv") else "text"
+    qty = qty if qty in ("auto", "owned", "one") else "auto"
+    cards = _filtered_cards(db, set, owned, q, rarity, colour, card_type, edition)
+
+    rows: list[tuple[int, Card]] = []
+    for card in cards:
+        have = card.quantity or 0
+        if qty == "one":
+            n = 1
+        elif qty == "owned":
+            n = have
+        else:
+            n = have or 1
+        if n <= 0:
+            continue
+        rows.append((n, card))
+
+    if fmt == "csv":
+        import csv
+
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(
+            ["Quantity", "Card Name", "Set", "Edition", "Collector Number",
+             "Rarity", "Colour", "Type", "Owned"]
+        )
+        for n, card in rows:
+            w.writerow(
+                [n, card.card_name, card.set_name, card.edition, card.collector_number,
+                 card.rarity, card.colour, card.card_type, card.quantity]
+            )
+        return PlainTextResponse(buf.getvalue(), media_type="text/csv")
+
+    if fmt == "arena":
+        lines = []
+        for n, card in rows:
+            code = (card.edition or "").upper() or "UNK"
+            num = card.collector_number or "0"
+            name = (card.card_name or "").split(" // ")[0].strip()  # front face only
+            lines.append(f"{n} {name} ({code}) {num}")
+        out = "\n".join(["Deck", *lines]) if lines else ""
+        return PlainTextResponse((out.strip() + "\n") if out else "", media_type="text/plain")
+
+    lines = []
+    if fmt == "text":
+        applied = {
+            "search": q, "set": set, "edition": edition, "rarity": rarity,
+            "colour": colour, "type": card_type,
+            "owned": None if owned is None else ("owned" if owned else "missing"),
+        }
+        active = ", ".join(f"{k}={v}" for k, v in applied.items() if v)
+        lines.append("// Collection export" + (f" — filters: {active}" if active else " — no filters"))
+        lines.append(f"// {len(rows)} unique cards, {sum(n for n, _ in rows)} copies")
+        lines.append("")
+    lines += [f"{n} {card.card_name}" for n, card in rows]
+    return PlainTextResponse(("\n".join(lines).strip() + "\n") if rows else "", media_type="text/plain")
 
 
 @app.patch("/api/collection/{card_id}", response_model=CardOut)

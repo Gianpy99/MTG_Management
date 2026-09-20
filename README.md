@@ -48,7 +48,8 @@ MTG_Management/
 
 - **Dashboard**: completamento unico/totale, copie, mancanti per rarità/colore,
   gap Rare/Mythic rilevanti per Aragorn, valore wishlist, stato mazzo, ultimo import.
-- **Collection**: ricerca (nome/oracle), filtri per set/rarità/posseduto, modifica quantità.
+- **Collection**: ricerca (nome/oracle), filtri per set/rarità/posseduto, modifica quantità,
+  **export della lista filtrata** (testo per AI, MTG Arena, Cardmarket o CSV).
 - **Sets**: completamento separato *The Hobbit* / *The Lord of the Rings*.
 - **Wishlist**: scopo, priorità (P1–P4/Watch), prezzo target e massimo, stato.
 - **Aragorn Commander**: builder singleton, validazione (100 carte, singleton,
@@ -129,6 +130,7 @@ GET    /health
 GET    /api/sets
 GET    /api/sets/{set_name}/completion
 GET    /api/cards?set=&owned=&q=&rarity=
+GET    /api/cards/export?set=&owned=&q=&rarity=&fmt=&qty=   (lista filtrata: text/cardmarket/arena/csv)
 PATCH  /api/collection/{card_id}          { "quantity": n }
 GET    /api/collection/summary
 GET    /api/wishlist
