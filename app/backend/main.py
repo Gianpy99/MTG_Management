@@ -84,10 +84,28 @@ def health() -> dict[str, str]:
 # Scryfall proxy (server-side, cached — avoids browser CORS + rate limits)
 # --------------------------------------------------------------------------- #
 @app.get("/api/scryfall")
-def scryfall_card(name: str) -> dict:
+def scryfall_card(name: str, with_price: bool = False, db: Session = Depends(get_db)) -> dict:
+    """Card details. ``with_price`` adds the Cardmarket price for the set's main
+    printing — opt-in, because the deck view calls this per thumbnail and must
+    not trigger a price lookup for every row."""
     from scryfall import get_card
 
-    return get_card(name)
+    card = dict(get_card(name))
+    if not with_price:
+        return card
+
+    from prices import cache_key, get_prices
+
+    # The search above may have matched a showcase variant, which is priced
+    # very differently from the main printing; price the main one instead.
+    row = db.query(Card).filter(Card.card_name == name).first()
+    edition, set_name = (row.edition, row.set_name) if row else ("", "")
+    priced = get_prices([(edition, set_name, name)]).get(cache_key(edition, set_name, name))
+    if priced:
+        card["cardmarket_price_eur"] = priced.get("eur")
+        if priced.get("url"):
+            card["cardmarket"] = priced["url"]
+    return card
 
 
 # --------------------------------------------------------------------------- #
@@ -182,6 +200,34 @@ def list_cards(
     db: Session = Depends(get_db),
 ) -> list[Card]:
     return _filtered_cards(db, set, owned, q, rarity, colour, card_type, edition)
+
+
+@app.get("/api/cards/prices")
+def card_prices(
+    set: str | None = None,
+    owned: bool | None = None,
+    q: str | None = None,
+    rarity: str | None = None,
+    colour: str | None = None,
+    card_type: str | None = None,
+    edition: str | None = None,
+    db: Session = Depends(get_db),
+) -> dict[str, dict]:
+    """Cardmarket prices for the cards matching the current view filters.
+
+    Resolved in bulk (75 per Scryfall request) and cached, so the browser makes
+    one call for the whole table instead of one per row.
+    """
+    from prices import cache_key, get_prices
+
+    cards = _filtered_cards(db, set, owned, q, rarity, colour, card_type, edition)
+    by_key = get_prices([(c.edition, c.set_name, c.card_name) for c in cards])
+    out: dict[str, dict] = {}
+    for c in cards:
+        price = by_key.get(cache_key(c.edition, c.set_name, c.card_name))
+        if price:
+            out[str(c.id)] = price
+    return out
 
 
 @app.get("/api/cards/export", response_class=PlainTextResponse)

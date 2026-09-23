@@ -123,6 +123,7 @@ th.sortable::after { content: attr(data-arrow); color: var(--gold); }
 .price-cell { white-space: nowrap; color: var(--muted); }
 .price-link { color: var(--ink); text-decoration: none; }
 .price-link:hover { color: var(--gold); text-decoration: underline; }
+.modal-price { margin: 0.2rem 0 0.6rem; color: var(--gold); font-weight: 600; }
 
 /* Stats / pie charts */
 .pie-row { display: flex; gap: 1.2rem; flex-wrap: wrap; }

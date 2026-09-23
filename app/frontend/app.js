@@ -97,6 +97,7 @@ function collectionFilterParams() {
 async function refreshCollection() {
   colCards = await api.get("cards?" + collectionFilterParams().toString());
   renderCollection();
+  loadPrices(); // one batched call; fills the price cells when it resolves
 }
 
 // Client-side sorting + display helpers.
@@ -135,7 +136,7 @@ function renderCollection() {
         <td>${c.collector_number}</td>
         <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
-        <td class="price-cell" data-name="${encodeURIComponent(c.card_name)}">…</td>
+        <td class="price-cell" data-id="${c.id}" data-name="${encodeURIComponent(c.card_name)}">${priceCell(c)}</td>
         <td><div class="qty">
           <button data-act="dec">−</button>
           <input type="number" min="0" value="${c.quantity}" />
@@ -150,38 +151,42 @@ function renderCollection() {
     th.setAttribute("aria-sort", active ? (colSort.dir === 1 ? "ascending" : "descending") : "none");
     th.dataset.arrow = active ? (colSort.dir === 1 ? " ▲" : " ▼") : "";
   });
-  setupLazyPrices();
 }
 
-// Lazy-load Cardmarket avg price (via the Scryfall proxy) only for rows
-// scrolled into view — avoids hammering Scryfall when a whole set is listed.
-let priceObserver = null;
-function setupLazyPrices() {
-  if (priceObserver) priceObserver.disconnect();
-  priceObserver = new IntersectionObserver((entries, obs) => {
-    entries.forEach((en) => {
-      if (en.isIntersecting) {
-        loadPrice(en.target);
-        obs.unobserve(en.target);
-      }
-    });
-  }, { rootMargin: "300px" });
-  document.querySelectorAll("#col-table td.price-cell").forEach((el) => priceObserver.observe(el));
+// Cardmarket prices for the whole filtered table, fetched in ONE backend call
+// (the server resolves them 75-at-a-time against Scryfall and caches them).
+// Doing this per row would mean hundreds of requests and would stall the page.
+let priceMap = {};
+
+function priceCell(c) {
+  const p = priceMap[c.id];
+  if (p === undefined) return '<span class="hint">…</span>';
+  const href = (p && p.url) || cardmarketUrl(c.card_name);
+  const link = (cls, txt) => `<a href="${href}" target="_blank" rel="noopener" class="${cls}">${txt}</a>`;
+  return p && p.eur != null ? link("price-link", `€${p.eur.toFixed(2)}`) : link("hint", "—");
 }
 
-async function loadPrice(cell) {
-  const name = decodeURIComponent(cell.dataset.name);
+async function loadPrices() {
+  const token = ++priceToken;
+  priceMap = {};
   try {
-    const c = await fetchScryfall(name);
-    if (c.cardmarket_price_eur != null) {
-      cell.innerHTML = `<a href="${c.cardmarket || cardmarketUrl(name)}" target="_blank" rel="noopener" class="price-link">€${c.cardmarket_price_eur.toFixed(2)}</a>`;
-    } else {
-      cell.innerHTML = `<a href="${c.cardmarket || cardmarketUrl(name)}" target="_blank" rel="noopener" class="hint">—</a>`;
-    }
+    const data = await api.get("cards/prices?" + collectionFilterParams().toString());
+    if (token !== priceToken) return; // a newer filter change superseded this
+    priceMap = data;
   } catch (e) {
-    cell.textContent = "—";
+    priceMap = {};
   }
+  document.querySelectorAll("#col-table td.price-cell").forEach((cell) => {
+    const p = priceMap[cell.dataset.id];
+    const name = decodeURIComponent(cell.dataset.name);
+    const href = (p && p.url) || cardmarketUrl(name);
+    cell.innerHTML =
+      p && p.eur != null
+        ? `<a href="${href}" target="_blank" rel="noopener" class="price-link">€${p.eur.toFixed(2)}</a>`
+        : `<a href="${href}" target="_blank" rel="noopener" class="hint">—</a>`;
+  });
 }
+let priceToken = 0;
 
 document.querySelector("#col-table thead").addEventListener("click", (e) => {
   const th = e.target.closest("th");
@@ -791,12 +796,17 @@ function cardmarketUrl(name) {
   return "https://www.cardmarket.com/en/Magic/Products/Search?searchString=" + encodeURIComponent(name);
 }
 
-async function fetchScryfall(name) {
-  if (scryfallCache.has(name)) return scryfallCache.get(name);
+async function fetchScryfall(name, withPrice = false) {
+  // Thumbnails don't need prices; only the modal asks for them, so the deck
+  // view's per-row thumbnail loads stay cheap.
+  const key = withPrice ? `${name}|price` : name;
+  if (scryfallCache.has(key)) return scryfallCache.get(key);
   // Go through our backend proxy (same origin → no CORS; server caches results
   // and prefers the Middle-earth printing).
-  const data = await api.get("scryfall?name=" + encodeURIComponent(name));
-  scryfallCache.set(name, data);
+  const data = await api.get(
+    "scryfall?name=" + encodeURIComponent(name) + (withPrice ? "&with_price=true" : "")
+  );
+  scryfallCache.set(key, data);
   return data;
 }
 
@@ -806,11 +816,13 @@ async function openCardModal(name) {
   const nameEl = document.getElementById("modal-name");
   const typeEl = document.getElementById("modal-type");
   const oracleEl = document.getElementById("modal-oracle");
+  const priceEl = document.getElementById("modal-price");
   const scry = document.getElementById("modal-scryfall");
   const cm = document.getElementById("modal-cardmarket");
 
   nameEl.textContent = name;
   typeEl.textContent = "";
+  priceEl.textContent = "";
   oracleEl.textContent = "Caricamento da Scryfall…";
   img.removeAttribute("src");
   scry.href = "https://scryfall.com/search?q=" + encodeURIComponent('!"' + name + '"');
@@ -818,12 +830,14 @@ async function openCardModal(name) {
   overlay.hidden = false;
 
   try {
-    const c = await fetchScryfall(name);
+    const c = await fetchScryfall(name, true);
     if (c.image) img.src = c.image;
     nameEl.textContent = c.name || name;
     const flavour = c.flavor_name ? `🗺️ Middle-earth: “${c.flavor_name}”  •  ` : "";
     typeEl.textContent = flavour + [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
     oracleEl.textContent = c.oracle_text || "";
+    priceEl.textContent =
+      c.cardmarket_price_eur != null ? `🛒 Cardmarket ≈ €${c.cardmarket_price_eur.toFixed(2)}` : "";
     if (c.scryfall_uri) scry.href = c.scryfall_uri;
     if (c.cardmarket) cm.href = c.cardmarket;
   } catch (err) {
