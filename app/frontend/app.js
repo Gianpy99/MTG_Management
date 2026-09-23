@@ -135,6 +135,7 @@ function renderCollection() {
         <td>${c.collector_number}</td>
         <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
+        <td class="price-cell" data-name="${encodeURIComponent(c.card_name)}">…</td>
         <td><div class="qty">
           <button data-act="dec">−</button>
           <input type="number" min="0" value="${c.quantity}" />
@@ -149,6 +150,37 @@ function renderCollection() {
     th.setAttribute("aria-sort", active ? (colSort.dir === 1 ? "ascending" : "descending") : "none");
     th.dataset.arrow = active ? (colSort.dir === 1 ? " ▲" : " ▼") : "";
   });
+  setupLazyPrices();
+}
+
+// Lazy-load Cardmarket avg price (via the Scryfall proxy) only for rows
+// scrolled into view — avoids hammering Scryfall when a whole set is listed.
+let priceObserver = null;
+function setupLazyPrices() {
+  if (priceObserver) priceObserver.disconnect();
+  priceObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        loadPrice(en.target);
+        obs.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: "300px" });
+  document.querySelectorAll("#col-table td.price-cell").forEach((el) => priceObserver.observe(el));
+}
+
+async function loadPrice(cell) {
+  const name = decodeURIComponent(cell.dataset.name);
+  try {
+    const c = await fetchScryfall(name);
+    if (c.cardmarket_price_eur != null) {
+      cell.innerHTML = `<a href="${c.cardmarket || cardmarketUrl(name)}" target="_blank" rel="noopener" class="price-link">€${c.cardmarket_price_eur.toFixed(2)}</a>`;
+    } else {
+      cell.innerHTML = `<a href="${c.cardmarket || cardmarketUrl(name)}" target="_blank" rel="noopener" class="hint">—</a>`;
+    }
+  } catch (e) {
+    cell.textContent = "—";
+  }
 }
 
 document.querySelector("#col-table thead").addEventListener("click", (e) => {

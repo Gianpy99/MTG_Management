@@ -66,6 +66,8 @@ def _fetch(url: str) -> dict | None:
 def _slim(c: dict) -> dict:
     faces = c.get("card_faces") or []
     imgs = c.get("image_uris") or (faces[0].get("image_uris") if faces else {}) or {}
+    prices = c.get("prices") or {}
+    eur = prices.get("eur") or prices.get("eur_foil")
     return {
         "name": c.get("name", ""),
         "flavor_name": c.get("flavor_name", ""),
@@ -77,17 +79,24 @@ def _slim(c: dict) -> dict:
         "image_small": imgs.get("small") or imgs.get("normal") or "",
         "scryfall_uri": c.get("scryfall_uri", ""),
         "cardmarket": (c.get("purchase_uris") or {}).get("cardmarket", ""),
+        # Scryfall sources "eur" from Cardmarket (lowest listed price of the
+        # printing it picked, i.e. our preferred/first "V.1" Middle-earth
+        # printing). It's an approximation of the Cardmarket avg — good
+        # enough to avoid tabbing back and forth, click through to verify.
+        "cardmarket_price_eur": float(eur) if eur else None,
     }
 
 
 def get_card(name: str) -> dict:
     key = name.strip().lower()
     cached = _cache.get(key)
-    if cached is not None:
+    # "cardmarket_price_eur" was added after some entries were cached; force a
+    # refetch for those so old cache files pick up the new price field.
+    if cached is not None and ("cardmarket_price_eur" in cached or cached.get("not_found")):
         return cached
     with _lock:
         cached = _cache.get(key)
-        if cached is not None:
+        if cached is not None and ("cardmarket_price_eur" in cached or cached.get("not_found")):
             return cached
         # Prefer a Middle-earth printing, fall back to fuzzy match.
         d = _fetch(

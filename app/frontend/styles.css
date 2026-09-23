@@ -120,6 +120,10 @@ th.sortable::after { content: attr(data-arrow); color: var(--gold); }
 
 .ed-badge { display: inline-block; padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; border: 1px solid var(--border); color: var(--gold); background: var(--panel-2); }
 
+.price-cell { white-space: nowrap; color: var(--muted); }
+.price-link { color: var(--ink); text-decoration: none; }
+.price-link:hover { color: var(--gold); text-decoration: underline; }
+
 /* Stats / pie charts */
 .pie-row { display: flex; gap: 1.2rem; flex-wrap: wrap; }
 .pie-card { flex: 1 1 220px; min-width: 200px; }
