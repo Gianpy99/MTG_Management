@@ -18,6 +18,7 @@ HEADER_MAP = {
     "set": "set_name",
     "card name": "card_name",
     "collector number": "collector_number",
+    "edition": "edition",
     "rarity": "rarity",
     "colour": "colour",
     "color": "colour",

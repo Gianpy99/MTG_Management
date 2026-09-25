@@ -55,7 +55,7 @@ MTG_Management/
 - **Aragorn Commander**: builder singleton, validazione (100 carte, singleton,
   colour identity Bant, restrizione set di progetto), stato Owned/Need per slot.
 - **Import/Export**: import XLSX/CSV con report (added/updated/unchanged/rejected/issues),
-  export CSV e **backup** del database SQLite.
+  export CSV (incluso codice edizione) e **backup** del database SQLite.
 
 Il workbook `Middle_Earth_MTG_Collection_Master_Template.xlsx` è la **sorgente
 autoritativa**: al primo avvio, se il DB è vuoto, viene importato da
@@ -74,6 +74,28 @@ cd app\backend
 
 Il DB SQLite viene creato in `app/backend/data/mtg.db` (ignorato da git).
 Override con la variabile `MTG_DATA_DIR`.
+
+### Mazzo Sauron ricevuto
+
+La lista da 100 carte è in
+`app/backend/seed/sauron_lord_of_rings_collection.txt`. Per registrare le
+copie fisiche e creare il mazzo separato **Sauron, Lord of the Rings (Owned)**
+su un server già aggiornato, esegui prima l'anteprima e poi l'import:
+
+```powershell
+.\.venv\Scripts\python.exe app\backend\seed\import_sauron_precon.py http://127.0.0.1:8094
+.\.venv\Scripts\python.exe app\backend\seed\import_sauron_precon.py http://127.0.0.1:8094 --apply
+```
+
+Usa l'URL del server di produzione al posto di `127.0.0.1` per aggiornare il
+Pi. L'import mantiene le copie già possedute, aggiunge quelle del precon e
+verifica 100 carte possedute. Tutte sono raggruppate sotto l'edizione
+**LOTR Commander** (`ltc`), come richiesto; le dieci identità disponibili
+solo in LTR (incluse le terre base) hanno una scheda distinta con numero
+`LTR-...` e una nota che ne esplicita la stampa. Prima dell'import sul server
+scarica un backup con `GET /api/backup`. Il journal nella directory dati
+locale consente di riprendere l'import senza aggiungere due volte le copie:
+non eliminarlo fino alla verifica del mazzo.
 
 ## Deploy sul Raspberry Pi
 

@@ -1290,7 +1290,7 @@ def export_collection(db: Session = Depends(get_db)) -> PlainTextResponse:
     writer = csv.writer(buf)
     writer.writerow(
         [
-            "Set", "Card Name", "Collector Number", "Rarity", "Colour", "Mana Cost",
+            "Set", "Card Name", "Collector Number", "Edition", "Rarity", "Colour", "Mana Cost",
             "Card Type", "Subtype", "Power", "Toughness", "Oracle Text / Ability",
             "Legendary?", "Creature Type", "Ring Tempts You?", "Food?", "Treasure?",
             "Ring / The One Ring Synergy?", "Aragorn Synergy (1-5)", "Gandalf Synergy (1-5)",
@@ -1300,7 +1300,7 @@ def export_collection(db: Session = Depends(get_db)) -> PlainTextResponse:
     for c in db.query(Card).order_by(Card.set_name, Card.card_name).all():
         writer.writerow(
             [
-                c.set_name, c.card_name, c.collector_number, c.rarity, c.colour, c.mana_cost,
+                c.set_name, c.card_name, c.collector_number, c.edition, c.rarity, c.colour, c.mana_cost,
                 c.card_type, c.subtype, c.power, c.toughness, c.oracle_text,
                 "Yes" if c.legendary else "No", c.creature_type,
                 "Yes" if c.ring_tempts else "No", "Yes" if c.food else "No",
