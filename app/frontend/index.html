@@ -282,12 +282,18 @@
     <section id="view-import" class="view">
       <div class="panel">
         <h3>Import workbook (XLSX / CSV)</h3>
+        <p class="hint">Aggiornamento in blocco: bastano le colonne <code>Set</code>, <code>Card Name</code> e una tra
+          <code>Quantity</code> (imposta le copie possedute) o <code>Add Quantity</code> (aggiunge copie, es. una nuova
+          consegna; negativo per toglierle). <code>Collector Number</code> / <code>Edition</code> servono solo se la carta
+          ha più stampe. Le celle vuote non modificano i dati esistenti. Puoi scaricare la collezione in XLSX, modificarla
+          in Excel e reimportarla.</p>
         <input type="file" id="import-file" accept=".xlsx,.csv" />
         <button id="import-btn" class="primary">Import</button>
         <pre id="import-result"></pre>
       </div>
       <div class="panel">
         <h3>Export & Backup</h3>
+        <a class="btn" href="api/export/collection.xlsx">Download collection XLSX</a>
         <a class="btn" href="api/export/collection.csv">Download collection CSV</a>
         <a class="btn" href="api/backup">Download database backup</a>
       </div>

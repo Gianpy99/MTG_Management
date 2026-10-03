@@ -55,8 +55,9 @@ MTG_Management/
 - **Wishlist**: scopo, priorità (P1–P4/Watch), prezzo target e massimo, stato.
 - **Aragorn Commander**: builder singleton, validazione (100 carte, singleton,
   colour identity Bant, restrizione set di progetto), stato Owned/Need per slot.
-- **Import/Export**: import XLSX/CSV con report (added/updated/unchanged/rejected/issues),
-  export CSV (incluso codice edizione) e **backup** del database SQLite.
+- **Import/Export**: import XLSX/CSV con report (added/updated/unchanged/rejected/copies_delta/issues),
+  export XLSX/CSV (incluso codice edizione) e **backup** del database SQLite.
+  Vedi [Aggiornare le quantità da Excel](#aggiornare-le-quantità-da-excel).
 - **🧪 Forge — testa il mazzo** (vista Decks): ogni mazzo può essere inviato al motore
   [Forge](forge/README.md) sul Raspberry Pi per un **audit** (struttura + carte non
   supportate/AI fallback, 1 partita contro sé stesso) o una **simulazione** AI vs AI
@@ -103,6 +104,30 @@ solo in LTR (incluse le terre base) hanno una scheda distinta con numero
 scarica un backup con `GET /api/backup`. Il journal nella directory dati
 locale consente di riprendere l'import senza aggiungere due volte le copie:
 non eliminarlo fino alla verifica del mazzo.
+
+### Aggiornare le quantità da Excel
+
+Da **Import / Export** scarica `collection.xlsx` (o il CSV), modificalo in Excel
+e reimportalo. Le righe vengono abbinate alle carte esistenti per `Set` +
+`Card Name` (senza distinzione di maiuscole), restringendo con `Edition` /
+`Collector Number` se presenti. Basta un file minimo, ad esempio per una nuova
+consegna:
+
+| Set | Card Name | Add Quantity |
+|---|---|---|
+| The Lord of the Rings | Galadriel, Light of Valinor | 1 |
+
+- `Quantity` **imposta** le copie possedute; `Add Quantity` le **aggiunge**
+  (negativo per toglierle). Se entrambe sono presenti: `Quantity + Add Quantity`.
+  Righe duplicate nello stesso file sommano le quantità.
+- `Owned?` è usato solo in assenza delle colonne quantità: `Yes` garantisce
+  almeno una copia, `No` non riduce mai le copie esistenti.
+- Le celle vuote non modificano i dati esistenti; carte non trovate vengono
+  aggiunte. Se una carta ha più stampe nello stesso set e la riga non ha
+  `Collector Number`/`Edition`, la riga viene scartata e segnalata in `issues`.
+- Sono accettati CSV di Excel con separatore `;` e codifica Windows.
+- Fai prima un backup (`GET /api/backup`): il report mostra `copies_delta`,
+  la variazione netta delle copie.
 
 ## Deploy sul Raspberry Pi
 
@@ -176,6 +201,7 @@ PATCH  /api/decks/aragorn/cards/{slot_id}
 DELETE /api/decks/aragorn/cards/{slot_id}
 GET    /api/decks/aragorn/validation
 POST   /api/import                        (multipart: file XLSX/CSV)
+GET    /api/export/collection.xlsx         (round-trip con Excel)
 GET    /api/export/collection.csv
 GET    /api/backup                         (download del DB SQLite)
 

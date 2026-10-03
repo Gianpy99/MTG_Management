@@ -1290,8 +1290,57 @@ async def import_upload(file: UploadFile, db: Session = Depends(get_db)) -> dict
         "updated": result.updated,
         "unchanged": result.unchanged,
         "rejected": result.rejected,
+        "copies_delta": result.copies_delta,
         "issues": result.issues[:100],
     }
+
+
+COLLECTION_EXPORT_HEADER = [
+    "Set", "Card Name", "Collector Number", "Edition", "Rarity", "Colour", "Mana Cost",
+    "Card Type", "Subtype", "Power", "Toughness", "Oracle Text / Ability",
+    "Legendary?", "Creature Type", "Ring Tempts You?", "Food?", "Treasure?",
+    "Ring / The One Ring Synergy?", "Aragorn Synergy (1-5)", "Gandalf Synergy (1-5)",
+    "Fellowship / Legends Synergy (1-5)", "Commander Role", "Owned?", "Quantity", "Notes",
+]
+
+
+def _collection_export_rows(db: Session) -> list[list]:
+    return [
+        [
+            c.set_name, c.card_name, c.collector_number, c.edition, c.rarity, c.colour, c.mana_cost,
+            c.card_type, c.subtype, c.power, c.toughness, c.oracle_text,
+            "Yes" if c.legendary else "No", c.creature_type,
+            "Yes" if c.ring_tempts else "No", "Yes" if c.food else "No",
+            "Yes" if c.treasure else "No", "Yes" if c.ring_synergy else "No",
+            c.aragorn_synergy, c.gandalf_synergy, c.fellowship_synergy,
+            c.commander_role, "Yes" if c.quantity > 0 else "No", c.quantity, c.notes,
+        ]
+        for c in db.query(Card).order_by(Card.set_name, Card.card_name).all()
+    ]
+
+
+@app.get("/api/export/collection.xlsx")
+def export_collection_xlsx(db: Session = Depends(get_db)) -> StreamingResponse:
+    """Excel round-trip: edit Quantity (or add an "Add Quantity" column) and re-import."""
+    import openpyxl
+    from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Collection"
+    ws.append(COLLECTION_EXPORT_HEADER)
+    for row in _collection_export_rows(db):
+        ws.append([ILLEGAL_CHARACTERS_RE.sub("", v) if isinstance(v, str) else v for v in row])
+    ws.freeze_panes = "C2"
+    ws.auto_filter.ref = ws.dimensions
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=collection.xlsx"},
+    )
 
 
 @app.get("/api/export/collection.csv")
@@ -1300,27 +1349,8 @@ def export_collection(db: Session = Depends(get_db)) -> PlainTextResponse:
 
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(
-        [
-            "Set", "Card Name", "Collector Number", "Edition", "Rarity", "Colour", "Mana Cost",
-            "Card Type", "Subtype", "Power", "Toughness", "Oracle Text / Ability",
-            "Legendary?", "Creature Type", "Ring Tempts You?", "Food?", "Treasure?",
-            "Ring / The One Ring Synergy?", "Aragorn Synergy (1-5)", "Gandalf Synergy (1-5)",
-            "Fellowship / Legends Synergy (1-5)", "Commander Role", "Owned?", "Quantity", "Notes",
-        ]
-    )
-    for c in db.query(Card).order_by(Card.set_name, Card.card_name).all():
-        writer.writerow(
-            [
-                c.set_name, c.card_name, c.collector_number, c.edition, c.rarity, c.colour, c.mana_cost,
-                c.card_type, c.subtype, c.power, c.toughness, c.oracle_text,
-                "Yes" if c.legendary else "No", c.creature_type,
-                "Yes" if c.ring_tempts else "No", "Yes" if c.food else "No",
-                "Yes" if c.treasure else "No", "Yes" if c.ring_synergy else "No",
-                c.aragorn_synergy, c.gandalf_synergy, c.fellowship_synergy,
-                c.commander_role, "Yes" if c.quantity > 0 else "No", c.quantity, c.notes,
-            ]
-        )
+    writer.writerow(COLLECTION_EXPORT_HEADER)
+    writer.writerows(_collection_export_rows(db))
     return PlainTextResponse(
         buf.getvalue(),
         media_type="text/csv",
