@@ -1,0 +1,7 @@
+*.jar
+*.zip
+**/__pycache__
+**/.pytest_cache
+MTG_Collection_Forge_Engine_PRD.md
+Forge_Deck_Audit.ps1
+scripts

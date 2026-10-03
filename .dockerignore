@@ -7,3 +7,5 @@ data
 .env
 *.xlsx
 *.docx
+forge
+.forge-decision

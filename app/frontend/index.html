@@ -237,6 +237,36 @@
           <span id="deck-export-status" class="hint"></span>
         </div>
       </details>
+      <details class="panel" id="forge-panel" open>
+        <summary><strong>🧪 Forge — testa il mazzo</strong> (simulazioni AI vs AI sul Raspberry Pi)</summary>
+        <p id="forge-status" class="hint">Verifica motore Forge…</p>
+        <div class="toolbar">
+          <label class="hint">Carte:
+            <select id="forge-scope">
+              <option value="all">Tutto il mazzo</option>
+              <option value="owned">Solo possedute</option>
+            </select>
+          </label>
+          <button id="forge-audit-btn" class="btn">🔍 Audit (1 partita contro sé stesso)</button>
+          <a id="forge-dck-link" class="btn" href="#">💾 Scarica .dck</a>
+        </div>
+        <div class="toolbar">
+          <label class="hint">Avversario: <select id="forge-opponent"></select></label>
+          <label class="hint">Partite: <input id="forge-games" type="number" min="1" max="1000" value="10" style="width:5rem" /></label>
+          <label class="hint"><input type="checkbox" id="forge-allow-invalid" /> consenti mazzo incompleto</label>
+          <button id="forge-sim-btn" class="primary">▶️ Simula</button>
+        </div>
+        <p id="forge-msg" class="hint"></p>
+        <div class="forge-jobs-wrap">
+          <table id="forge-jobs">
+            <thead><tr>
+              <th>Job</th><th>Avversario</th><th>Stato</th><th>Risultato</th><th>Qualità</th><th></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="forge-detail" hidden></div>
+      </details>
       <div class="panel" id="deck-validation"></div>
       <div class="table-wrap">
         <table id="deck-table">

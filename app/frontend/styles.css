@@ -120,6 +120,14 @@ th.sortable::after { content: attr(data-arrow); color: var(--gold); }
 .pill { padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.75rem; border: 1px solid var(--border); }
 .pill.owned { color: var(--green); border-color: var(--green); }
 .pill.missing { color: var(--red); border-color: var(--red); }
+.pill.warn { color: var(--gold); border-color: var(--gold); }
+
+.forge-jobs-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.8rem; }
+#forge-jobs td { vertical-align: top; }
+#forge-detail { border-top: 1px solid var(--border); padding-top: 0.6rem; }
+#forge-detail ul { margin: 0.3rem 0 0.8rem; padding-left: 1.2rem; }
+.forge-bar { display: inline-block; width: 70px; height: 6px; background: var(--panel-2); border-radius: 3px; vertical-align: middle; overflow: hidden; }
+.forge-bar i { display: block; height: 100%; background: var(--gold); }
 
 .ed-badge { display: inline-block; padding: 0.05rem 0.4rem; border-radius: 4px; font-size: 0.72rem; white-space: nowrap; border: 1px solid var(--border); color: var(--gold); background: var(--panel-2); }
 

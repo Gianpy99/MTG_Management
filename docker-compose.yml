@@ -4,6 +4,8 @@
 # Copia questa cartella in ~/apps/mtg-collection/ sul Pi, poi:
 #   docker compose up -d
 # La UI e l'API girano su http://192.168.1.129:8094/ (dietro Caddy: /mtg/).
+# Il Forge Engine gira su http://192.168.1.129:8787/ (solo LAN).
+# (Deploy standard: Jenkins - vedi Jenkinsfile. Questo file e' l'opzione manuale.)
 # =============================================================================
 services:
   app:
@@ -17,6 +19,7 @@ services:
       - "8094:8094"
     environment:
       MTG_DATA_DIR: /app/data
+      FORGE_URL: http://mtg-forge:8787
     volumes:
       - ./data:/app/data
     healthcheck:
@@ -24,3 +27,20 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  mtg-forge:
+    build:
+      context: ./forge
+      dockerfile: Dockerfile
+      target: runtime
+    image: mtg-forge:latest
+    container_name: mtg-forge
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - mtg-forge-data:/data
+
+volumes:
+  mtg-forge-data:
+    name: mtg-forge-data

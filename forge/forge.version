@@ -1,0 +1,7 @@
+# Pinned Forge release used by the mtg-forge image (read by the Jenkinsfile).
+# To update Forge: change both values (sha256 of forge-installer-<version>.tar.bz2
+# from https://github.com/Card-Forge/forge/releases), commit and push to main.
+# Jenkins rebuilds the image, runs a real Forge game, deploys, smoke-tests and
+# rolls back automatically if anything fails.
+FORGE_VERSION=2.0.15
+FORGE_SHA256=4468f182b60f6ca62d89697baa208981085af744f116781af751c611826db600

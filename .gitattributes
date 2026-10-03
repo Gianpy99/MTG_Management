@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Read by Linux shells inside Jenkins/Docker: always LF.
+*.sh text eol=lf
+forge/forge.version text eol=lf
+forge/Dockerfile text eol=lf

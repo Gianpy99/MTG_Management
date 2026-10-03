@@ -23,6 +23,7 @@ from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from database import Base, DB_PATH, engine, get_db, run_migrations
+from forge_bridge import router as forge_router
 from importer import import_file
 from models import Card, Deck, DeckCard, ImportLog, WishlistItem
 from schemas import (
@@ -46,6 +47,7 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 DECK_SIZE = 100
 
 app = FastAPI(title="Middle-earth MTG Management", version="1.0.0")
+app.include_router(forge_router)
 
 
 @app.middleware("http")

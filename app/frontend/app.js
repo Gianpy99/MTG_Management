@@ -511,6 +511,7 @@ async function renderDeck() {
     .join("");
   setupLazyThumbs("#deck-table");
   applyDeckViewMode();
+  renderForgePanel();
 }
 
 // ---------- Visual deck view ----------
@@ -763,6 +764,259 @@ document.getElementById("deck-export-download").addEventListener("click", () => 
   a.remove();
   URL.revokeObjectURL(url);
   status.textContent = "Scaricato \u2705";
+});
+
+// ---------- Forge engine (deck testing on the Raspberry Pi) ----------
+let forgeTestDecks = null;
+let forgeTimer = null;
+let forgeOpenJob = null;
+const FORGE_ACTIVE = new Set(["QUEUED", "RUNNING"]);
+const FORGE_STATUS_PILL = { COMPLETED: "owned", FAILED: "missing", TIMEOUT: "missing", CANCELLED: "", QUEUED: "warn", RUNNING: "warn" };
+const FORGE_FLAG_LABEL = {
+  unsupported_cards: "⛔ carte non supportate",
+  ai_fallback: "⚠️ AI fallback",
+  clock_draws: "⏱️ patte per tempo",
+  structure_invalid: "⚠️ mazzo non valido",
+  small_sample: "📉 campione piccolo",
+};
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function forgeError(err) {
+  try {
+    const body = JSON.parse(err.message);
+    const d = body.detail ?? body;
+    if (typeof d === "string") return d;
+    const issues = (d.issues || []).map((i) => i.message).join("; ");
+    return (d.detail || JSON.stringify(d)) + (issues ? ` — ${issues}` : "");
+  } catch {
+    return err.message;
+  }
+}
+
+async function renderForgePanel() {
+  const deck = decksCache.find((d) => d.slug === currentDeckSlug);
+  if (!deck) return;
+  const st = document.getElementById("forge-status");
+  const status = await api.get("forge/status").catch((e) => ({ status: "unavailable", error: e.message }));
+  const online = status.status !== "unavailable";
+  st.innerHTML = online
+    ? `<span class="pill ${status.status === "ready" ? "owned" : "warn"}">${esc(status.status)}</span> ` +
+      `Forge ${esc(status.forge_version)} · Java ${esc(status.java_version)} · ${esc(status.platform)} · ` +
+      `worker ${esc(status.worker)} · in coda ${status.queue}`
+    : `<span class="pill missing">offline</span> Motore Forge non raggiungibile: ${esc(status.error)}`;
+  ["forge-audit-btn", "forge-sim-btn"].forEach((id) => (document.getElementById(id).disabled = !online));
+
+  if (online && !forgeTestDecks) forgeTestDecks = await api.get("forge/test-decks").catch(() => null);
+  const commander = deck.format === "commander";
+  const sel = document.getElementById("forge-opponent");
+  const previous = sel.value;
+  const mine = decksCache.filter((d) => (d.format === "commander") === commander);
+  const tests = (forgeTestDecks || []).filter((t) => (t.format === "commander") === commander);
+  sel.innerHTML =
+    `<optgroup label="I miei mazzi">` +
+    mine.map((d) => `<option value="deck:${esc(d.slug)}">${esc(d.name)}${d.slug === deck.slug ? " (mirror)" : ""}</option>`).join("") +
+    `</optgroup>` +
+    (tests.length
+      ? `<optgroup label="Mazzi di riferimento Forge">` +
+        tests.map((t) => `<option value="test:${esc(t.name)}">${esc(t.name.replace(/_/g, " "))}</option>`).join("") +
+        `</optgroup>`
+      : "");
+  if ([...sel.options].some((o) => o.value === previous)) {
+    sel.value = previous;
+  } else {
+    const firstOther = [...sel.options].find((o) => o.value !== `deck:${deck.slug}`);
+    if (firstOther) sel.value = firstOther.value;
+  }
+  updateForgeDckLink();
+  if (online) await refreshForgeJobs();
+}
+
+function updateForgeDckLink() {
+  const scope = document.getElementById("forge-scope").value;
+  document.getElementById("forge-dck-link").href = `${API}decks/${currentDeckSlug}/forge.dck?scope=${scope}`;
+}
+
+function forgeMySide(job, slug) {
+  const sides = (job.decks || []).filter((d) => d.deck_ref === slug).map((d) => d.side);
+  return sides.length === 1 ? sides[0] : "a";
+}
+
+function forgeOpponent(job, slug) {
+  if (job.kind === "audit") return "— (self-test)";
+  const mine = forgeMySide(job, slug);
+  const other = (job.decks || []).find((d) => d.side !== mine);
+  return other ? other.deck_name.replace(/_/g, " ") : "?";
+}
+
+function forgeResult(job, slug) {
+  if (job.kind === "audit") {
+    const a = job.result?.audit;
+    if (!a) return "";
+    const cls = a.status === "PASS" ? "owned" : a.status === "WARN" ? "warn" : "missing";
+    return `<span class="pill ${cls}">${a.status}</span>`;
+  }
+  const done = job.games_completed;
+  if (!done) return "";
+  const mineIsB = forgeMySide(job, slug) === "b";
+  const w = mineIsB ? job.deck_b_wins : job.deck_a_wins;
+  const l = mineIsB ? job.deck_a_wins : job.deck_b_wins;
+  return `<strong>${w}</strong>–${l}${job.draws ? `–${job.draws}` : ""} <span class="hint">(${Math.round((w / done) * 100)}% vinte)</span>`;
+}
+
+async function refreshForgeJobs() {
+  clearTimeout(forgeTimer);
+  const slug = currentDeckSlug;
+  let jobs;
+  try {
+    jobs = await api.get(`forge/simulations?deck=${encodeURIComponent(slug)}&limit=15`);
+  } catch (err) {
+    document.getElementById("forge-msg").textContent = "Errore: " + forgeError(err);
+    return;
+  }
+  if (slug !== currentDeckSlug) return;
+  const tbody = document.querySelector("#forge-jobs tbody");
+  tbody.innerHTML = jobs.length
+    ? jobs
+        .map((j) => {
+          const pct = Math.round((j.games_completed / j.games_requested) * 100);
+          const progress = FORGE_ACTIVE.has(j.status)
+            ? ` <span class="forge-bar"><i style="width:${pct}%"></i></span> ${j.games_completed}/${j.games_requested}`
+            : ` <span class="hint">${j.games_completed}/${j.games_requested}</span>`;
+          const flags = (j.result?.quality_flags || []).map((f) => FORGE_FLAG_LABEL[f] || esc(f)).join("<br>");
+          return `<tr data-id="${esc(j.id)}">
+            <td>${j.kind === "audit" ? "🔍 Audit" : "⚔️ Sim"}<br><span class="hint">${esc((j.created_at || "").replace("T", " ").slice(0, 16))}</span></td>
+            <td>${esc(forgeOpponent(j, slug))}</td>
+            <td><span class="pill ${FORGE_STATUS_PILL[j.status] || ""}">${esc(j.status)}</span>${progress}</td>
+            <td>${forgeResult(j, slug)}</td>
+            <td class="hint">${flags}</td>
+            <td>
+              <button class="link" data-act="detail">dettagli</button>
+              <a class="link" href="${API}forge/simulations/${encodeURIComponent(j.id)}/log" target="_blank" rel="noopener">log</a>
+              ${FORGE_ACTIVE.has(j.status) ? '<button class="link danger" data-act="cancel">annulla</button>' : ""}
+            </td>
+          </tr>`;
+        })
+        .join("")
+    : `<tr><td colspan="6" class="hint">Nessun test ancora: lancia un audit o una simulazione.</td></tr>`;
+  if (forgeOpenJob && jobs.some((j) => j.id === forgeOpenJob)) showForgeDetail(forgeOpenJob);
+  const viewActive = document.getElementById("view-deck").classList.contains("active");
+  if (viewActive && jobs.some((j) => FORGE_ACTIVE.has(j.status))) forgeTimer = setTimeout(refreshForgeJobs, 4000);
+}
+
+async function showForgeDetail(id) {
+  const box = document.getElementById("forge-detail");
+  forgeOpenJob = id;
+  let job;
+  try {
+    job = await api.get(`forge/simulations/${encodeURIComponent(id)}`);
+  } catch (err) {
+    box.hidden = false;
+    box.textContent = "Errore: " + forgeError(err);
+    return;
+  }
+  const groups = {
+    ERROR: "❌ Struttura",
+    RED: "⛔ Non supportate da Forge (scartate dal mazzo)",
+    YELLOW: "⚠️ AI fallback (giocate con AI semplificata)",
+    INFO: "ℹ️ Note di conversione",
+  };
+  const deckName = (side) => ((job.decks || []).find((d) => d.side === side)?.deck_name || "").replace(/_/g, " ");
+  const issueHtml = Object.entries(groups)
+    .map(([sev, title]) => {
+      const items = (job.issues || []).filter((i) => i.severity === sev);
+      if (!items.length) return "";
+      return `<strong>${title}</strong> (${items.length})<ul>` +
+        items
+          .map((i) =>
+            `<li>${i.side && job.kind !== "audit" ? `<span class="hint">[${esc(deckName(i.side))}]</span> ` : ""}` +
+            (i.card_name
+              ? `<strong>${esc(i.card_name)}</strong>` +
+                (i.set_code ? ` <span class="hint">${esc(i.set_code)}${i.collector_number ? " #" + esc(i.collector_number) : ""}</span>` : "") +
+                " — "
+              : "") +
+            `${esc(i.message)}</li>`)
+          .join("") +
+        "</ul>";
+    })
+    .join("");
+  const r = job.result || {};
+  box.hidden = false;
+  box.innerHTML =
+    `<h3>${job.kind === "audit" ? "Audit" : "Simulazione"} ${esc(job.id)}</h3>` +
+    `<p class="hint">${esc((job.decks || []).map((d) => d.deck_name).join(" vs "))} · ${esc(job.format)} · ` +
+    `Forge ${esc(job.forge_version || "")} / Java ${esc(job.java_version || "")} · ` +
+    `sha256 ${esc((job.decks?.[0]?.deck_hash || "").slice(0, 12))}</p>` +
+    (job.error ? `<p class="err">${esc(job.error)}</p>` : "") +
+    (job.kind === "simulation" && job.games_completed
+      ? `<p>${esc(deckName("a"))}: <strong>${job.deck_a_wins}</strong> · ${esc(deckName("b"))}: <strong>${job.deck_b_wins}</strong> · patte: ${job.draws} ` +
+        `<span class="hint">— risultati osservati con l'AI di Forge, non una previsione del metagame reale.</span></p>`
+      : "") +
+    (r.audit
+      ? `<p>Struttura <strong>${esc(r.audit.structure)}</strong> · Caricamento Forge <strong>${esc(r.audit.forge_load)}</strong> · <span class="hint">${esc(r.audit.note)}</span></p>`
+      : "") +
+    (issueHtml || `<p class="ok">Nessun problema rilevato.</p>`) +
+    `<button class="btn" id="forge-detail-close">Chiudi</button>`;
+  document.getElementById("forge-detail-close").addEventListener("click", () => {
+    box.hidden = true;
+    forgeOpenJob = null;
+  });
+}
+
+document.getElementById("forge-scope").addEventListener("change", updateForgeDckLink);
+
+document.getElementById("forge-audit-btn").addEventListener("click", async () => {
+  const msg = document.getElementById("forge-msg");
+  msg.textContent = "Invio audit…";
+  try {
+    const r = await api.send("POST", `decks/${currentDeckSlug}/forge/audit`, { scope: document.getElementById("forge-scope").value });
+    msg.textContent = `Audit ${r.job_id} in coda.`;
+    forgeOpenJob = r.job_id;
+    refreshForgeJobs();
+  } catch (err) {
+    msg.textContent = "Errore: " + forgeError(err);
+  }
+});
+
+document.getElementById("forge-sim-btn").addEventListener("click", async () => {
+  const msg = document.getElementById("forge-msg");
+  const opp = document.getElementById("forge-opponent").value;
+  if (!opp) { msg.textContent = "Scegli un avversario."; return; }
+  const body = {
+    deck: currentDeckSlug,
+    games: parseInt(document.getElementById("forge-games").value, 10) || 1,
+    scope: document.getElementById("forge-scope").value,
+    allow_invalid: document.getElementById("forge-allow-invalid").checked,
+  };
+  if (opp.startsWith("deck:")) body.opponent_deck = opp.slice(5);
+  else body.opponent_test_deck = opp.slice(5);
+  msg.textContent = "Invio simulazione…";
+  try {
+    const r = await api.send("POST", "forge/simulations", body);
+    msg.textContent = `Simulazione ${r.job_id} in coda` +
+      (r.issues?.RED ? ` — ⚠️ ${r.issues.RED} carte non supportate da Forge (vedi dettagli).` : ".");
+    refreshForgeJobs();
+  } catch (err) {
+    msg.textContent = "Errore: " + forgeError(err);
+  }
+});
+
+document.querySelector("#forge-jobs tbody").addEventListener("click", async (e) => {
+  const act = e.target.dataset.act;
+  const row = e.target.closest("tr");
+  if (!act || !row) return;
+  const id = row.dataset.id;
+  if (act === "detail") return showForgeDetail(id);
+  if (act === "cancel") {
+    try {
+      await api.send("POST", `forge/simulations/${encodeURIComponent(id)}/cancel`);
+    } catch (err) {
+      document.getElementById("forge-msg").textContent = "Errore: " + forgeError(err);
+    }
+    refreshForgeJobs();
+  }
 });
 
 // ---------- Import ----------

@@ -184,3 +184,7 @@ cython_debug/
 app/backend/data/
 /data/
 *.db
+# Forge engine: installer/archives are downloaded by the Docker build, never committed
+forge/*.jar
+forge/*.zip
+.forge-decision

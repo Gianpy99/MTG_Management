@@ -40,6 +40,7 @@ MTG_Management/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Jenkinsfile              # pipeline CI/CD (build + deploy container sul Pi)
+├── forge/                   # 🧪 Forge Engine: simulazioni/audit dei mazzi (vedi forge/README.md)
 ├── .env.example
 └── Middle_Earth_MTG_Collection_*.{xlsx,docx}   # PRD + workbook seed originali
 ```
@@ -56,6 +57,12 @@ MTG_Management/
   colour identity Bant, restrizione set di progetto), stato Owned/Need per slot.
 - **Import/Export**: import XLSX/CSV con report (added/updated/unchanged/rejected/issues),
   export CSV (incluso codice edizione) e **backup** del database SQLite.
+- **🧪 Forge — testa il mazzo** (vista Decks): ogni mazzo può essere inviato al motore
+  [Forge](forge/README.md) sul Raspberry Pi per un **audit** (struttura + carte non
+  supportate/AI fallback, 1 partita contro sé stesso) o una **simulazione** AI vs AI
+  contro un altro mazzo della collezione o un mazzo di riferimento, con avanzamento,
+  vittorie, flag di qualità e log grezzo di Forge. Opzione "solo possedute" per testare
+  solo le copie fisiche.
 
 Il workbook `Middle_Earth_MTG_Collection_Master_Template.xlsx` è la **sorgente
 autoritativa**: al primo avvio, se il DB è vuoto, viene importato da
@@ -116,6 +123,9 @@ non eliminarlo fino alla verifica del mazzo.
    pipeline: **build** dell'immagine `mtg-collection:latest` e **deploy** del
    container sulla porta **8094** con volume dati `mtg-collection-data` e
    `--restart unless-stopped` (riparte da solo al reboot del Pi).
+   La stessa pipeline testa, builda e deploya il **Forge Engine** (`mtg-forge`,
+   porta **8787**, volume `mtg-forge-data`, rete Docker `mtg-net` condivisa con l'app):
+   unit test → partita Forge reale → deploy → partita Forge post-deploy → rollback automatico se fallisce.
 
 3. Segui la prima build su `http://192.168.1.129:8080/job/mtg-collection/`.
 
@@ -168,7 +178,21 @@ GET    /api/decks/aragorn/validation
 POST   /api/import                        (multipart: file XLSX/CSV)
 GET    /api/export/collection.csv
 GET    /api/backup                         (download del DB SQLite)
+
+# Forge Engine (proxy verso mtg-forge, FORGE_URL=http://mtg-forge:8787)
+GET    /api/forge/status
+GET    /api/forge/test-decks
+GET    /api/forge/matchups
+GET    /api/decks/{slug}/forge.dck?scope=all|owned
+POST   /api/decks/{slug}/forge/audit       { "scope": "all" }
+POST   /api/forge/simulations              { "deck": slug, "opponent_deck": slug | "opponent_test_deck": nome,
+                                             "games": 10, "scope": "all|owned", "allow_invalid": false }
+GET    /api/forge/simulations?deck=slug
+GET    /api/forge/simulations/{id}         (+ /results, /log, POST /cancel)
 ```
+
+Il motore Forge ha una sua API su `http://192.168.1.129:8787/` (solo LAN) — dettagli,
+aggiornamento della versione di Forge e rollback in [forge/README.md](forge/README.md).
 
 ## Backup
 
