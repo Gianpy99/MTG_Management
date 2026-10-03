@@ -154,6 +154,7 @@ GET    /api/sets/{set_name}/completion
 GET    /api/cards?set=&owned=&q=&rarity=
 GET    /api/cards/export?set=&owned=&q=&rarity=&fmt=&qty=   (lista filtrata: text/cardmarket/arena/csv)
 PATCH  /api/collection/{card_id}          { "quantity": n }
+DELETE /api/collection/{card_id}          (also removes the card's deck and wishlist entries)
 GET    /api/collection/summary
 GET    /api/wishlist
 POST   /api/wishlist

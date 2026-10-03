@@ -68,11 +68,17 @@ function bars(obj) {
 let setsCache = [];
 async function loadCollection() {
   if (!setsCache.length) {
-    setsCache = await api.get("sets");
-    const sel = document.getElementById("col-set");
-    sel.innerHTML = '<option value="">All sets</option>' + setsCache.map((s) => `<option>${s.name}</option>`).join("");
+    await refreshSetOptions();
   }
   await refreshCollection();
+}
+
+async function refreshSetOptions() {
+  const sel = document.getElementById("col-set");
+  const selectedSet = sel.value;
+  setsCache = await api.get("sets");
+  sel.innerHTML = '<option value="">All sets</option>' + setsCache.map((s) => `<option>${s.name}</option>`).join("");
+  sel.value = selectedSet;
 }
 
 function collectionFilterParams() {
@@ -143,6 +149,7 @@ function renderCollection() {
           <button data-act="inc">+</button>
           ${c.quantity === 0 ? `<button class="link" data-act="wish">+wishlist</button>` : ""}
         </div></td>
+        <td><button class="link danger" data-act="delete" aria-label="Delete ${c.card_name}" title="Delete this card entry">delete</button></td>
       </tr>`
     )
     .join("");
@@ -210,6 +217,18 @@ document.querySelector("#col-table tbody").addEventListener("click", async (e) =
   if (act === "inc") input.value = +input.value + 1;
   else if (act === "dec") input.value = Math.max(0, +input.value - 1);
   else if (act === "wish") { await addWishlist(+id); return; }
+  else if (act === "delete") {
+    const card = colCards.find((c) => c.id === +id);
+    if (!card || !confirm(`Permanently delete "${card.card_name}" (${card.set_name}) from the catalogue? Its deck entries and wishlist entries will also be removed.`)) return;
+    try {
+      await api.send("DELETE", `collection/${id}`);
+      await refreshSetOptions();
+      await refreshCollection();
+    } catch (err) {
+      alert("Error deleting card: " + err.message);
+    }
+    return;
+  }
   else return;
   await api.send("PATCH", `collection/${id}`, { quantity: +input.value });
 });

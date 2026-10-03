@@ -321,6 +321,16 @@ def update_quantity(card_id: int, payload: QuantityUpdate, db: Session = Depends
     return card
 
 
+@app.delete("/api/collection/{card_id}")
+def delete_collection_card(card_id: int, db: Session = Depends(get_db)) -> dict:
+    card = db.get(Card, card_id)
+    if card is None:
+        raise HTTPException(status_code=404, detail="Card not found")
+    db.delete(card)
+    db.commit()
+    return {"deleted": card_id}
+
+
 @app.get("/api/collection/summary")
 def collection_summary(db: Session = Depends(get_db)) -> dict:
     total = db.query(func.count(Card.id)).scalar() or 0
