@@ -118,6 +118,17 @@ function numish(v) {
 }
 
 function compareCards(a, b, key) {
+  if (key === "cardmarket") {
+    const priceA = priceMap[a.id]?.eur;
+    const priceB = priceMap[b.id]?.eur;
+    if (priceA == null && priceB != null) return 1;
+    if (priceA != null && priceB == null) return -1;
+    if (priceA != null && priceB != null) {
+      return (priceA - priceB) * colSort.dir ||
+        a.card_name.localeCompare(b.card_name) * colSort.dir;
+    }
+    return a.card_name.localeCompare(b.card_name) * colSort.dir;
+  }
   if (key === "collector_number") {
     return numish(a.collector_number) - numish(b.collector_number) ||
       String(a.collector_number).localeCompare(String(b.collector_number));
@@ -132,7 +143,11 @@ function compareCards(a, b, key) {
 }
 
 function renderCollection() {
-  const sorted = [...colCards].sort((a, b) => compareCards(a, b, colSort.key) * colSort.dir);
+  const sorted = [...colCards].sort((a, b) =>
+    colSort.key === "cardmarket"
+      ? compareCards(a, b, colSort.key)
+      : compareCards(a, b, colSort.key) * colSort.dir
+  );
   const tbody = document.querySelector("#col-table tbody");
   tbody.innerHTML = sorted
     .map(
@@ -143,13 +158,13 @@ function renderCollection() {
         <td><button class="card-link" data-name="${encodeURIComponent(c.card_name)}">${c.card_name}</button> ${c.legendary ? "⭐" : ""}</td>
         <td>${c.rarity}</td><td>${c.colour}</td><td>${c.card_type}</td>
         <td class="price-cell" data-id="${c.id}" data-name="${encodeURIComponent(c.card_name)}">${priceCell(c)}</td>
-        <td><div class="qty">
+        <td class="quantity-cell"><div class="qty">
           <button data-act="dec">−</button>
           <input type="number" min="0" value="${c.quantity}" />
           <button data-act="inc">+</button>
-          ${c.quantity === 0 ? `<button class="link" data-act="wish">+wishlist</button>` : ""}
         </div></td>
-        <td><button class="link danger" data-act="delete" aria-label="Delete ${c.card_name}" title="Delete this card entry">delete</button></td>
+        <td class="collection-action-cell">${c.quantity === 0 ? `<button class="link" data-act="wish">+ wishlist</button>` : ""}</td>
+        <td class="collection-action-cell"><button class="link danger" data-act="delete" aria-label="Delete ${c.card_name}" title="Delete this card entry">delete</button></td>
       </tr>`
     )
     .join("");
@@ -183,6 +198,7 @@ async function loadPrices() {
   } catch (e) {
     priceMap = {};
   }
+  if (colSort.key === "cardmarket") renderCollection();
   document.querySelectorAll("#col-table td.price-cell").forEach((cell) => {
     const p = priceMap[cell.dataset.id];
     const name = decodeURIComponent(cell.dataset.name);
@@ -197,7 +213,7 @@ let priceToken = 0;
 
 document.querySelector("#col-table thead").addEventListener("click", (e) => {
   const th = e.target.closest("th");
-  if (!th || !th.dataset.sort) return;
+  if (!th || !th.dataset.sort || !th.classList.contains("sortable")) return;
   if (colSort.key === th.dataset.sort) colSort.dir *= -1;
   else colSort = { key: th.dataset.sort, dir: 1 };
   renderCollection();
