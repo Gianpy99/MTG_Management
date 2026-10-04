@@ -119,8 +119,8 @@ function numish(v) {
 
 function compareCards(a, b, key) {
   if (key === "cardmarket") {
-    const priceA = priceMap[a.id]?.eur;
-    const priceB = priceMap[b.id]?.eur;
+    const priceA = priceValue(priceMap[a.id]);
+    const priceB = priceValue(priceMap[b.id]);
     if (priceA == null && priceB != null) return 1;
     if (priceA != null && priceB == null) return -1;
     if (priceA != null && priceB != null) {
@@ -180,12 +180,21 @@ function renderCollection() {
 // Doing this per row would mean hundreds of requests and would stall the page.
 let priceMap = {};
 
+// Cardmarket prices are in EUR; the backend adds a GBP conversion (ECB rate).
+function priceValue(p) {
+  return p ? p.gbp ?? p.eur ?? null : null;
+}
+
+function priceLink(p, href) {
+  if (!p || p.eur == null) return `<a href="${href}" target="_blank" rel="noopener" class="hint">—</a>`;
+  const text = p.gbp != null ? `£${p.gbp.toFixed(2)}` : `€${p.eur.toFixed(2)}`;
+  return `<a href="${href}" target="_blank" rel="noopener" class="price-link" title="Cardmarket €${p.eur.toFixed(2)}">${text}</a>`;
+}
+
 function priceCell(c) {
   const p = priceMap[c.id];
   if (p === undefined) return '<span class="hint">…</span>';
-  const href = (p && p.url) || cardmarketUrl(c.card_name);
-  const link = (cls, txt) => `<a href="${href}" target="_blank" rel="noopener" class="${cls}">${txt}</a>`;
-  return p && p.eur != null ? link("price-link", `€${p.eur.toFixed(2)}`) : link("hint", "—");
+  return priceLink(p, (p && p.url) || cardmarketUrl(c.card_name));
 }
 
 async function loadPrices() {
@@ -203,10 +212,7 @@ async function loadPrices() {
     const p = priceMap[cell.dataset.id];
     const name = decodeURIComponent(cell.dataset.name);
     const href = (p && p.url) || cardmarketUrl(name);
-    cell.innerHTML =
-      p && p.eur != null
-        ? `<a href="${href}" target="_blank" rel="noopener" class="price-link">€${p.eur.toFixed(2)}</a>`
-        : `<a href="${href}" target="_blank" rel="noopener" class="hint">—</a>`;
+    cell.innerHTML = priceLink(p, href);
   });
 }
 let priceToken = 0;
@@ -1140,7 +1146,9 @@ async function openCardModal(name) {
     typeEl.textContent = flavour + [c.type_line, c.mana_cost].filter(Boolean).join("  •  ");
     oracleEl.textContent = c.oracle_text || "";
     priceEl.textContent =
-      c.cardmarket_price_eur != null ? `🛒 Cardmarket ≈ €${c.cardmarket_price_eur.toFixed(2)}` : "";
+      c.cardmarket_price_gbp != null
+        ? `🛒 Cardmarket ≈ £${c.cardmarket_price_gbp.toFixed(2)} (€${c.cardmarket_price_eur.toFixed(2)})`
+        : c.cardmarket_price_eur != null ? `🛒 Cardmarket ≈ €${c.cardmarket_price_eur.toFixed(2)}` : "";
     if (c.scryfall_uri) scry.href = c.scryfall_uri;
     if (c.cardmarket) cm.href = c.cardmarket;
   } catch (err) {

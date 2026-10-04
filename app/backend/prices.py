@@ -14,10 +14,15 @@ Anything that fails to resolve is retried by name alone.
 Results are cached to a JSON file in the data volume (same place as the SQLite
 DB) so prices survive restarts and redeploys, with a TTL so they stay roughly
 current.
+
+Scryfall only publishes Cardmarket prices in EUR (there is no ``gbp`` field), so
+the EUR price is the cached source of truth and a GBP figure is derived from
+the ECB EUR→GBP rate (Frankfurter API, cached for a day).
 """
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 import urllib.error
@@ -35,6 +40,9 @@ HEADERS = {
 COLLECTION_URL = "https://api.scryfall.com/cards/collection"
 CHUNK = 75  # Scryfall's documented maximum identifiers per collection request.
 TTL_SECONDS = 7 * 24 * 3600  # Cardmarket prices drift; refresh weekly.
+FX_URL = "https://api.frankfurter.dev/v1/latest?base=EUR&symbols=GBP"
+FX_KEY = "fx:eur_gbp"
+FX_TTL_SECONDS = 24 * 3600
 
 # The workbook stores display names; Scryfall needs set codes. ``edition`` is
 # the code when the Scryfall enrichment has run, otherwise fall back to this.
@@ -49,7 +57,7 @@ SET_CODES = {
 
 _lock = threading.Lock()
 _last_call = 0.0
-# key -> {"gbp": float | None, "url": str, "ts": float}
+# key -> {"eur": float | None, "url": str, "ts": float}; FX_KEY -> {"rate", "date", "ts"}
 _cache: dict[str, dict] = {}
 
 if CACHE_FILE.exists():
@@ -90,9 +98,9 @@ def cache_key(edition: str, set_name: str, name: str) -> str:
 
 def _price_of(card: dict) -> dict:
     prices = card.get("prices") or {}
-    gbp = prices.get("gbp") or prices.get("gbp_foil")
+    eur = prices.get("eur") or prices.get("eur_foil")
     return {
-        "gbp": float(gbp) if gbp else None,
+        "eur": float(eur) if eur else None,
         "url": (card.get("purchase_uris") or {}).get("cardmarket", ""),
         "ts": time.time(),
     }
@@ -139,21 +147,42 @@ def _search_price(name: str) -> dict | None:
     """Cheapest priced paper printing, for cards the collection lookup can't price.
 
     Cards with no set code (imported as 'Unknown') otherwise resolve to an
-    arbitrary printing that carries no gbp price at all.
+    arbitrary printing that carries no EUR price at all.
     """
     url = "https://api.scryfall.com/cards/search?" + urllib.parse.urlencode(
-        {"q": f'!"{name}" -is:digital', "unique": "prints", "order": "gbp", "dir": "asc"}
+        {"q": f'!"{name}" -is:digital', "unique": "prints", "order": "eur", "dir": "asc"}
     )
     data = _get(url)
     for card in (data or {}).get("data", []):
         priced = _price_of(card)
-        if priced["gbp"] is not None:
+        if priced["eur"] is not None:
             return priced
     return None
 
 
 def _fresh(entry: dict | None) -> bool:
-    return bool(entry) and (time.time() - entry.get("ts", 0)) < TTL_SECONDS
+    # Entries without an "eur" field came from a build that looked for a
+    # non-existent Scryfall "gbp" price; refetch them.
+    return bool(entry) and "eur" in entry and (time.time() - entry.get("ts", 0)) < TTL_SECONDS
+
+
+def eur_to_gbp_rate() -> float | None:
+    """ECB EUR→GBP rate, cached for a day; stale cache or ``EUR_GBP_RATE`` if offline."""
+    entry = _cache.get(FX_KEY) or {}
+    if entry.get("rate") and time.time() - entry.get("ts", 0) < FX_TTL_SECONDS:
+        return entry["rate"]
+    data = _get(FX_URL) or {}
+    rate = (data.get("rates") or {}).get("GBP")
+    if rate:
+        _cache[FX_KEY] = {"rate": float(rate), "date": data.get("date", ""), "ts": time.time()}
+        _save()
+        return float(rate)
+    if entry.get("rate"):
+        return entry["rate"]
+    try:
+        return float(os.environ["EUR_GBP_RATE"])
+    except (KeyError, ValueError):
+        return None
 
 
 def _front(name: str) -> str:
@@ -182,7 +211,7 @@ def _resolve(keys: list[str], names: dict[str, str], use_set: bool) -> set[str]:
         for k in chunk:
             priced = by_name.get(_front(names[k]).lower())
             # Treat a priceless hit as unresolved so the next stage can retry.
-            if priced and priced["gbp"] is not None:
+            if priced and priced["eur"] is not None:
                 _cache[k] = priced
                 found.add(k)
     return found
@@ -191,8 +220,10 @@ def _resolve(keys: list[str], names: dict[str, str], use_set: bool) -> set[str]:
 def get_prices(cards: list[tuple[str, str, str]]) -> dict[str, dict]:
     """Resolve prices for ``(edition, set_name, card_name)`` triples.
 
-    Returns a ``cache_key -> {"gbp", "url"}`` map. Cached entries are returned
-    immediately; only stale/missing ones hit the network, in chunks of 75.
+    Returns a ``cache_key -> {"eur", "gbp", "url"}`` map: ``eur`` is the
+    Cardmarket price, ``gbp`` its conversion (``None`` if no rate is available).
+    Cached entries are returned immediately; only stale/missing ones hit the
+    network, in chunks of 75.
     """
     names: dict[str, str] = {}  # key -> card name used as the identifier
     for edition, set_name, name in cards:
@@ -213,11 +244,17 @@ def get_prices(cards: list[tuple[str, str, str]]) -> dict[str, dict]:
                 # 3. cheapest priced paper printing, for anything still unpriced.
                 for k in (k for k in missing if k not in found):
                     priced = _search_price(_front(names[k]))
-                    _cache[k] = priced or {"gbp": None, "url": "", "ts": time.time()}
+                    _cache[k] = priced or {"eur": None, "url": "", "ts": time.time()}
                 _save()  # one write per batch, not per card
 
+    with _lock:
+        rate = eur_to_gbp_rate()
+
+    def gbp(eur: float | None) -> float | None:
+        return round(eur * rate, 2) if eur is not None and rate else None
+
     return {
-        k: {"gbp": v.get("gbp"), "url": v.get("url", "")}
+        k: {"eur": v.get("eur"), "gbp": gbp(v.get("eur")), "url": v.get("url", "")}
         for k in names
         if (v := _cache.get(k))
     }

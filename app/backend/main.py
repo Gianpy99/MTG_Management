@@ -105,6 +105,7 @@ def scryfall_card(name: str, with_price: bool = False, db: Session = Depends(get
     priced = get_prices([(edition, set_name, name)]).get(cache_key(edition, set_name, name))
     if priced:
         card["cardmarket_price_eur"] = priced.get("eur")
+        card["cardmarket_price_gbp"] = priced.get("gbp")
         if priced.get("url"):
             card["cardmarket"] = priced["url"]
     return card
