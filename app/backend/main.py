@@ -651,6 +651,37 @@ def update_deck_card(slug: str, slot_id: int, payload: DeckCardIn, db: Session =
     return slot
 
 
+@app.post("/api/decks/{slug}/cards/{slot_id}/commander", response_model=DeckCardOut)
+def toggle_deck_commander(slug: str, slot_id: int, db: Session = Depends(get_db)) -> DeckCard:
+    """Mark a main-deck card as the deck's commander (or unmark it if it already is)."""
+    deck = _get_deck(db, slug)
+    slot = db.get(DeckCard, slot_id)
+    if slot is None or slot.deck_id != deck.id:
+        raise HTTPException(status_code=404, detail="Deck slot not found")
+    if deck.format != "commander":
+        raise HTTPException(status_code=400, detail="Only Commander decks have a commander.")
+    if slot.board == "side":
+        raise HTTPException(status_code=400, detail="The commander must be in the main deck.")
+    if slot.is_commander:
+        slot.is_commander = False
+        if slot.role == "Commander":
+            slot.role = ""
+        if _norm_name(deck.commander_name) == _norm_name(slot.card.card_name):
+            deck.commander_name = ""
+    else:
+        # Validation allows exactly one commander, so the new one replaces any other.
+        for other in db.query(DeckCard).filter(DeckCard.deck_id == deck.id, DeckCard.is_commander.is_(True)):
+            other.is_commander = False
+            if other.role == "Commander":
+                other.role = ""
+        slot.is_commander = True
+        slot.role = "Commander"
+        deck.commander_name = slot.card.card_name
+    db.commit()
+    db.refresh(slot)
+    return slot
+
+
 @app.delete("/api/decks/{slug}/cards/{slot_id}")
 def delete_deck_card(slug: str, slot_id: int, db: Session = Depends(get_db)) -> dict:
     deck = _get_deck(db, slug)
@@ -663,43 +694,64 @@ def delete_deck_card(slug: str, slot_id: int, db: Session = Depends(get_db)) -> 
 
 
 _DECK_LINE = re.compile(r"^\s*(?:(\d+)\s*[xX]?\s+)?(.+?)\s*$")
-_SKIP_PREFIXES = ("//", "#", "deck", "commander:", "sideboard", "sb:", "maybeboard", "about")
+_COMMANDER_HINT = re.compile(r"^(?://\s*)?commander\s*:\s*(.+)$", re.IGNORECASE)
+_SECTION_HEADERS = {"commander", "deck", "main", "mainboard", "sideboard", "maybeboard", "companion"}
 
 
-def _parse_decklist(text: str) -> list[tuple[int, str]]:
+def _norm_name(name: str | None) -> str:
+    return (name or "").strip().lower()
+
+
+def _clean_card_name(name: str) -> str:
+    # Drop trailing set/collector hints: "(LTR) 192" or "[LTR]".
+    return re.sub(r"\s*[\(\[][A-Za-z0-9]{2,5}[\)\]]\s*\d*\s*$", "", name).strip()
+
+
+def _parse_decklist(text: str) -> tuple[list[tuple[int, str, bool]], list[str]]:
     """Parse lines like '1 Card Name', '1x Card Name', 'Card Name'.
 
-    Ignores empty lines, comments and section headers. Strips a trailing set
-    hint in parentheses, e.g. 'Aragorn, the Uniter (LTR) 192'.
+    Returns ``(entries, commander_hints)`` where each entry is
+    ``(qty, name, in_commander_section)``. Cards listed under a ``Commander``
+    header (MTG Arena / Moxfield style) are flagged; ``Commander: Name`` and
+    ``// Commander: Name`` lines only name the commander. Other comments and
+    section headers are ignored, and trailing set hints such as
+    'Aragorn, the Uniter (LTR) 192' are stripped.
     """
-    out: list[tuple[int, str]] = []
+    out: list[tuple[int, str, bool]] = []
+    hints: list[str] = []
+    section = ""
     for raw in text.splitlines():
         line = raw.strip()
-        if not line:
+        if not line or line.startswith("#"):
             continue
-        if line.startswith("#"):
+        hint = _COMMANDER_HINT.match(line)
+        if hint:
+            m = _DECK_LINE.match(hint.group(1))
+            name = _clean_card_name(m.group(2)) if m else ""
+            if name:
+                hints.append(name)
             continue
-        low = line.lower()
+        if line.startswith("//"):
+            continue
+        low = line.lower().rstrip(":").strip()
+        if low in _SECTION_HEADERS or (line.endswith(":") and not _DECK_LINE.match(line).group(1)):
+            section = low
+            continue
         m = _DECK_LINE.match(line)
         if not m:
             continue
-        # Skip pure section headers ("Deck", "Commander:", "Sideboard").
-        if m.group(1) is None and (low in ("deck", "sideboard", "maybeboard") or low.endswith(":")):
-            continue
         qty = int(m.group(1)) if m.group(1) else 1
-        name = m.group(2).strip()
-        # Drop trailing set/collector hints: "(LTR) 192" or "[LTR]".
-        name = re.sub(r"\s*[\(\[][A-Za-z0-9]{2,5}[\)\]]\s*\d*\s*$", "", name).strip()
+        name = _clean_card_name(m.group(2))
         if name:
-            out.append((qty, name))
-    return out
+            out.append((qty, name, section == "commander"))
+    return out, hints
 
 
 @app.post("/api/decks/{slug}/import")
 def import_deck(slug: str, payload: DeckImportIn, db: Session = Depends(get_db)) -> dict:
     deck = _get_deck(db, slug)
     board = "side" if payload.board == "side" else "main"
-    parsed = _parse_decklist(payload.text)
+    parsed, commander_hints = _parse_decklist(payload.text)
     if not parsed:
         raise HTTPException(status_code=400, detail="No card lines found in decklist")
 
@@ -719,16 +771,34 @@ def import_deck(slug: str, payload: DeckImportIn, db: Session = Depends(get_db))
     # Aggregate requested quantities per unique card (keeps basic-land copies).
     order: list[str] = []
     agg: dict[str, list] = {}  # norm -> [display_name, qty]
-    for qty, name in parsed:
-        norm = name.strip().lower()
+    listed_commanders: list[str] = []
+    for qty, name, in_cmd_section in parsed:
+        norm = _norm_name(name)
         if norm not in agg:
             agg[norm] = [name, 0]
             order.append(norm)
         agg[norm][1] += qty
+        if in_cmd_section and norm not in listed_commanders:
+            listed_commanders.append(norm)
+
+    # The decklist's own Commander section / "Commander: X" line wins over the
+    # name stored on the deck; it only applies to main-deck imports.
+    commander_norms: set[str] = set()
+    if deck.format == "commander" and board == "main":
+        from_list = listed_commanders + [n for n in map(_norm_name, commander_hints) if n in agg]
+        if from_list:
+            commander_norms = {from_list[0]}
+            deck.commander_name = agg[from_list[0]][0]
+            db.query(DeckCard).filter(
+                DeckCard.deck_id == deck.id, DeckCard.is_commander.is_(True)
+            ).update({DeckCard.is_commander: False}, synchronize_session=False)
+        elif deck.commander_name:
+            commander_norms = {_norm_name(deck.commander_name)}
 
     matched = 0
     created = 0
     slots = 0
+    commander_found = ""
     for norm in order:
         display, qty = agg[norm]
         card = existing_by_name.get(norm)
@@ -747,12 +817,9 @@ def import_deck(slug: str, payload: DeckImportIn, db: Session = Depends(get_db))
         else:
             matched += 1
 
-        is_cmd = (
-            deck.format == "commander"
-            and board == "main"
-            and bool(deck.commander_name)
-            and norm == deck.commander_name.strip().lower()
-        )
+        is_cmd = norm in commander_norms
+        if is_cmd:
+            commander_found = card.card_name
         db.add(
             DeckCard(
                 deck_id=deck.id,
@@ -774,6 +841,7 @@ def import_deck(slug: str, payload: DeckImportIn, db: Session = Depends(get_db))
         "created_as_need": created,
         "replaced": payload.replace,
         "board": board,
+        "commander": commander_found or None,
     }
 
 
@@ -986,7 +1054,9 @@ def validate_deck(slug: str, db: Session = Depends(get_db)) -> dict:
             )
         commanders = [s for s in main_slots if s.is_commander]
         if len(commanders) == 0:
-            errors.append(f"No commander set. Mark {deck.commander_name or 'the commander'} as commander.")
+            errors.append(
+                f"No commander set. Mark {deck.commander_name or 'the commander'} with ☆ in the Cmd column of the table."
+            )
         elif len(commanders) > 1:
             errors.append("More than one commander marked.")
         if side_total:

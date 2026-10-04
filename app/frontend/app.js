@@ -504,7 +504,9 @@ async function renderDeck() {
         <td>${d.card.quantity >= d.quantity || isBasicCard(d.card)
           ? `<span class="pill owned">owned</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`
           : `<span class="pill missing">need</span> <span class="hint">${d.card.quantity}/${d.quantity}</span>`}</td>
-        <td>${d.is_commander ? "👑" : ""}</td>
+        <td>${deck.format === "commander" && d.board !== "side"
+          ? `<button class="link" data-act="cmd" title="${d.is_commander ? "Rimuovi come comandante" : "Imposta come comandante"}">${d.is_commander ? "👑" : "☆"}</button>`
+          : d.is_commander ? "👑" : ""}</td>
         <td><button class="link danger" data-act="del">remove</button></td>
       </tr>`
     )
@@ -687,6 +689,18 @@ async function loadThumb(img) {
 document.querySelector("#deck-table tbody").addEventListener("click", async (e) => {
   if (e.target.classList.contains("card-link") || e.target.classList.contains("deck-thumb")) {
     openCardModal(decodeURIComponent(e.target.dataset.name));
+    return;
+  }
+  if (e.target.dataset.act === "cmd") {
+    const id = e.target.closest("tr").dataset.id;
+    try {
+      const slot = await api.send("POST", `decks/${currentDeckSlug}/cards/${id}/commander`);
+      const d = decksCache.find((x) => x.slug === currentDeckSlug);
+      if (d) d.commander_name = slot.is_commander ? slot.card.card_name : "";
+    } catch (err) {
+      alert("Errore: " + err.message);
+    }
+    renderDeck();
     return;
   }
   if (e.target.dataset.act !== "del") return;

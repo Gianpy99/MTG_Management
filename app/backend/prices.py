@@ -49,7 +49,7 @@ SET_CODES = {
 
 _lock = threading.Lock()
 _last_call = 0.0
-# key -> {"eur": float | None, "url": str, "ts": float}
+# key -> {"gbp": float | None, "url": str, "ts": float}
 _cache: dict[str, dict] = {}
 
 if CACHE_FILE.exists():
@@ -90,9 +90,9 @@ def cache_key(edition: str, set_name: str, name: str) -> str:
 
 def _price_of(card: dict) -> dict:
     prices = card.get("prices") or {}
-    eur = prices.get("eur") or prices.get("eur_foil")
+    gbp = prices.get("gbp") or prices.get("gbp_foil")
     return {
-        "eur": float(eur) if eur else None,
+        "gbp": float(gbp) if gbp else None,
         "url": (card.get("purchase_uris") or {}).get("cardmarket", ""),
         "ts": time.time(),
     }
@@ -139,15 +139,15 @@ def _search_price(name: str) -> dict | None:
     """Cheapest priced paper printing, for cards the collection lookup can't price.
 
     Cards with no set code (imported as 'Unknown') otherwise resolve to an
-    arbitrary printing that carries no EUR price at all.
+    arbitrary printing that carries no gbp price at all.
     """
     url = "https://api.scryfall.com/cards/search?" + urllib.parse.urlencode(
-        {"q": f'!"{name}" -is:digital', "unique": "prints", "order": "eur", "dir": "asc"}
+        {"q": f'!"{name}" -is:digital', "unique": "prints", "order": "gbp", "dir": "asc"}
     )
     data = _get(url)
     for card in (data or {}).get("data", []):
         priced = _price_of(card)
-        if priced["eur"] is not None:
+        if priced["gbp"] is not None:
             return priced
     return None
 
@@ -182,7 +182,7 @@ def _resolve(keys: list[str], names: dict[str, str], use_set: bool) -> set[str]:
         for k in chunk:
             priced = by_name.get(_front(names[k]).lower())
             # Treat a priceless hit as unresolved so the next stage can retry.
-            if priced and priced["eur"] is not None:
+            if priced and priced["gbp"] is not None:
                 _cache[k] = priced
                 found.add(k)
     return found
@@ -191,7 +191,7 @@ def _resolve(keys: list[str], names: dict[str, str], use_set: bool) -> set[str]:
 def get_prices(cards: list[tuple[str, str, str]]) -> dict[str, dict]:
     """Resolve prices for ``(edition, set_name, card_name)`` triples.
 
-    Returns a ``cache_key -> {"eur", "url"}`` map. Cached entries are returned
+    Returns a ``cache_key -> {"gbp", "url"}`` map. Cached entries are returned
     immediately; only stale/missing ones hit the network, in chunks of 75.
     """
     names: dict[str, str] = {}  # key -> card name used as the identifier
@@ -213,11 +213,11 @@ def get_prices(cards: list[tuple[str, str, str]]) -> dict[str, dict]:
                 # 3. cheapest priced paper printing, for anything still unpriced.
                 for k in (k for k in missing if k not in found):
                     priced = _search_price(_front(names[k]))
-                    _cache[k] = priced or {"eur": None, "url": "", "ts": time.time()}
+                    _cache[k] = priced or {"gbp": None, "url": "", "ts": time.time()}
                 _save()  # one write per batch, not per card
 
     return {
-        k: {"eur": v.get("eur"), "url": v.get("url", "")}
+        k: {"gbp": v.get("gbp"), "url": v.get("url", "")}
         for k in names
         if (v := _cache.get(k))
     }
